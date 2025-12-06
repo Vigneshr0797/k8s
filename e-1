@@ -1,3 +1,4 @@
-[appuser@EQVLWSO2APSIT15 ~]$ sudo kubeadm config images pull
-error: failed to create new CRI runtime service: validate service connection: validate CRI v1 runtime API for endpoint "unix:///var/run/containerd/containerd.sock": rpc error: code = Unimplemented desc = unknown service runtime.v1.RuntimeService
-To see the stack trace of this error execute with --v=5 or higher
+[appuser@EQVLWSO2APSIT15 ~]$ sudo crictl info
+DEBU[0000] Get runtime connection
+DEBU[0000] Using runtime connection timeout: 10s
+FATA[0000] validate service connection: validate CRI v1 runtime API for endpoint "unix:///run/containerd/containerd.sock": rpc error: code = Unimplemented desc = unknown service runtime.v1.RuntimeService
