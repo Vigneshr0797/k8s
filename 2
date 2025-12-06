@@ -1,6 +1,33 @@
-[root@EQVLWSO2APSIT02 ~]# sudo rm -rf /etc/containerd
-sudo rm -rf /var/lib/containerd
-sudo rm -rf /run/containerd
-rm: cannot remove '/run/containerd/io.containerd.runtime.v2.task/k8s.io/a7c2d516daaca6ca9487e1f56bd0bb89a685b28384e9c10bb37740a25e7d0426/rootfs': Device or resource busy
-
-
+[root@EQVLWSO2APSIT15 ~]# cd /run/containerd/
+[root@EQVLWSO2APSIT15 containerd]# ls
+containerd.sock        io.containerd.grpc.v1.cri            io.containerd.runtime.v2.task             runc
+containerd.sock.ttrpc  io.containerd.mount-manager.v1.bolt  io.containerd.sandbox.controller.v1.shim  s
+[root@EQVLWSO2APSIT15 containerd]# sudo rm -rf *
+rm: cannot remove 'io.containerd.grpc.v1.cri/sandboxes/d612b38429fe257b9ad4720857469fbc25e66319b1873eb393520da2b53a7970/shm': Device or resource busy
+rm: cannot remove 'io.containerd.grpc.v1.cri/sandboxes/ca88f8d3cb63dc96716c0f39b5cac285d0930626fa79e7753ad62e0ec726ef81/shm': Device or resource busy
+rm: cannot remove 'io.containerd.grpc.v1.cri/sandboxes/0b8e8f1cb051004280193bad4c4e737751b1207d4719020264f69a776b3f8328/shm': Device or resource busy
+rm: cannot remove 'io.containerd.grpc.v1.cri/sandboxes/6fdd952bae2e1639898cf57c29d468c290116de1cbad23bbed5384517b60e501/shm': Device or resource busy
+rm: cannot remove 'io.containerd.grpc.v1.cri/sandboxes/1977c79f2e909f9d293afb7e93585bc3111af04b5b2f75ffbd2b4ac5c8b2e286/shm': Device or resource busy
+rm: cannot remove 'io.containerd.grpc.v1.cri/sandboxes/7f4d5c6dd6863208691584202d8920e31085836a00663ca4b8424214b50eb1a0/shm': Device or resource busy
+rm: cannot remove 'io.containerd.grpc.v1.cri/sandboxes/e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7/shm': Device or resource busy
+rm: cannot remove 'io.containerd.grpc.v1.cri/sandboxes/d37b7a80dab446fac7661178baa9d494ecaff604d9334d3433821ecd0d6513a2/shm': Device or resource busy
+rm: cannot remove 'io.containerd.grpc.v1.cri/sandboxes/6ed74f1aa0b2491b670f2fa3f66776165a03abb7e40c847e40bf61ea1085a736/shm': Device or resource busy
+rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/532d2dc256e697bf22984b14788843db3a0f1a6d40a544645c633560942d8295/rootfs': Device or resource busy
+rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/d612b38429fe257b9ad4720857469fbc25e66319b1873eb393520da2b53a7970/rootfs': Device or resource busy
+rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/77c28faff0fc904fc71f2c4babcfd0cf14410ce5b718061840238872e7decb70/rootfs': Device or resource busy
+rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/e038ffb9dab1035077a4a9f9c857dcc23319b7e904fd68f1f3b9f284fa87284d/rootfs': Device or resource busy
+rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/ca88f8d3cb63dc96716c0f39b5cac285d0930626fa79e7753ad62e0ec726ef81/rootfs': Device or resource busy
+rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/0b8e8f1cb051004280193bad4c4e737751b1207d4719020264f69a776b3f8328/rootfs': Device or resource busy
+rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/10343554ff4d0445f24e2c26775ce099dfdee6dc4894e3f4d7190ef5bf7e5986/rootfs': Device or resource busy
+rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/6fdd952bae2e1639898cf57c29d468c290116de1cbad23bbed5384517b60e501/rootfs': Device or resource busy
+rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/c573fc64add9d5ad34671031294bcbfb1c9c6b51061d583ceae9b4769b684b77/rootfs': Device or resource busy
+rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/1977c79f2e909f9d293afb7e93585bc3111af04b5b2f75ffbd2b4ac5c8b2e286/rootfs': Device or resource busy
+rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/28a0dba4b4892bf2c73e462fddb7a08c07bcc42650a3d4e4a243efaf9e7a14a9/rootfs': Device or resource busy
+rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/d6d0900d812838a9db848386b8642a8666def7323e56adeccfb3b8941c7863bb/rootfs': Device or resource busy
+rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/afe7d1fdf254993552836cce5e8927ebd5986a70d56afe481f17bb26968d1a44/rootfs': Device or resource busy
+rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/a8756c7db2589413ba053a933d850d30cbe2d2b384de7f462dbc2725a021e273/rootfs': Device or resource busy
+rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/7f4d5c6dd6863208691584202d8920e31085836a00663ca4b8424214b50eb1a0/rootfs': Device or resource busy
+rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7/rootfs': Device or resource busy
+rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/d37b7a80dab446fac7661178baa9d494ecaff604d9334d3433821ecd0d6513a2/rootfs': Device or resource busy
+rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/6ed74f1aa0b2491b670f2fa3f66776165a03abb7e40c847e40bf61ea1085a736/rootfs': Device or resource busy
+[root@EQVLWSO2APSIT15 containerd]#
