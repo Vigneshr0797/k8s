@@ -1,30 +1,69 @@
-registry.k8s.io/kube-apiserver:v1.34.2                                                                  application/vnd.docker.distribution.manifest.list.v2+json sha256:e009ef63deaf797763b5bd423d04a099a2fe414a081bf7d216b43bc9e76b9077 25.8 MiB  linux/amd64,linux/arm64,linux/ppc64le,linux/s390x                            io.cri-containerd.image=managed
-registry.k8s.io/kube-controller-manager:v1.34.2                                                         application/vnd.docker.distribution.manifest.list.v2+json sha256:5c3998664b77441c09a4604f1361b230e63f7a6f299fc02fc1ebd1a12c38e3eb 21.8 MiB  linux/amd64,linux/arm64,linux/ppc64le,linux/s390x                            io.cri-containerd.image=managed
-registry.k8s.io/kube-proxy:v1.34.2                                                                      application/vnd.docker.distribution.manifest.list.v2+json sha256:d8b843ac8a5e861238df24a4db8c2ddced89948633400c4660464472045276f5 24.8 MiB  linux/amd64,linux/arm64,linux/ppc64le,linux/s390x                            io.cri-containerd.image=managed
-registry.k8s.io/kube-scheduler:v1.34.2                                                                  application/vnd.docker.distribution.manifest.list.v2+json sha256:44229946c0966b07d5c0791681d803e77258949985e49b4ab0fbdff99d2a48c6 16.6 MiB  linux/amd64,linux/arm64,linux/ppc64le,linux/s390x                            io.cri-containerd.image=managed
-[root@EQVLWSO2APSIT15-Master1 containerd]# sudo ctr -n k8s.io images tag registry.k8s.io/kube-apiserver:v1.34.2 harbour.equitasbank.com/kubernetes-v1.34.2/kube-apiserver:v1.34.2
-harbour.equitasbank.com/kubernetes-v1.34.2/kube-apiserver:v1.34.2
-[root@EQVLWSO2APSIT15-Master1 containerd]# ^C
-[root@EQVLWSO2APSIT15-Master1 containerd]# sudo ctr -n k8s.io images  push --user admin:Harbor12345 harbour.equitasbank.com/kubernetes-v1.34.2/kube-apiserver:v1.34.2
-harbour.equitasbank.com/kubernetes v1.34        pushing content
-└──index v1.34.2@sha256:e009ef63deaf7977        waiting         |--------------------------------------|
-   ├──manifest (e1e4a34f7968)                   waiting         |--------------------------------------|
-   ├──manifest (f0e0dc00029a)                   waiting         |--------------------------------------|
-   ├──manifest (8002b35fedba)                   waiting         |--------------------------------------|
-   └──manifest (9a94f333d6fe)                   waiting         |--------------------------------------|
-application/vnd.docker.distribution.manifest.list.v2+json sha256:e009ef63deaf797763b5bd423d04a099a2fe414a081bf7d216b43bc9e76b9077
-Pushing to OCI Registry (harbour.equitasbank.com/kubernetes-v1.34.2/kube-apiserver:v1.34.2)     elapsed: 0.0 s  total:   0.0 B  (0.0 B/s)
-ctr: content digest sha256:e1e4a34f796818b3c064ab8642c26e073da71af04504acb00241c34412f633fa: not found
-[root@EQVLWSO2APSIT15-Master1 containerd]# exit
-logout
-[appuser@EQVLWSO2APSIT15-Master1 script-files]$ sudo ctr -n k8s.io images  push --user admin:Harbor12345 harbour.equitasbank.com/kubernetes-v1.34.2/kube-apiserver:v1.34.2
-harbour.equitasbank.com/kubernetes v1.34        pushing content
-└──index v1.34.2@sha256:e009ef63deaf7977        waiting         |--------------------------------------|
-   ├──manifest (e1e4a34f7968)                   waiting         |--------------------------------------|
-   ├──manifest (8002b35fedba)                   waiting         |--------------------------------------|
-   ├──manifest (f0e0dc00029a)                   waiting         |--------------------------------------|
-   └──manifest (9a94f333d6fe)                   waiting         |--------------------------------------|
-application/vnd.docker.distribution.manifest.list.v2+json sha256:e009ef63deaf797763b5bd423d04a099a2fe414a081bf7d216b43bc9e76b9077
-Pushing to OCI Registry (harbour.equitasbank.com/kubernetes-v1.34.2/kube-apiserver:v1.34.2)     elapsed: 0.0 s  total:   0.0 B  (0.0 B/s)
-ctr: content digest sha256:e1e4a34f796818b3c064ab8642c26e073da71af04504acb00241c34412f633fa: not found
- Warning  FailedScheduling  68s (x20 over 96m)  default-scheduler  0/1 nodes are available: 1 node(s) had untolerated taint(s). no new claims to deallocate, preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.
+[root@EQVLWSO2APSIT15-Master1 images]# kubectl get po -n kube-system -o wide
+NAME                                              READY   STATUS       RESTARTS      AGE   IP             NODE                      NOMINATED NODE   READINESS GATES
+calico-kube-controllers-6ffb5df975-bnxtg          0/1     Pending      0             16s   <none>         <none>                    <none>           <none>
+calico-node-wbst5                                 0/1     Init:Error   2 (14s ago)   16s   10.57.12.120   eqvlwso2apsit15-master1   <none>           <none>
+coredns-66bc5c9577-cwzzb                          0/1     Pending      0             16s   <none>         <none>                    <none>           <none>
+coredns-66bc5c9577-xjckk                          0/1     Pending      0             16s   <none>         <none>                    <none>           <none>
+etcd-eqvlwso2apsit15-master1                      1/1     Running      0             99m   10.57.12.120   eqvlwso2apsit15-master1   <none>           <none>
+kube-apiserver-eqvlwso2apsit15-master1            1/1     Running      0             99m   10.57.12.120   eqvlwso2apsit15-master1   <none>           <none>
+kube-controller-manager-eqvlwso2apsit15-master1   1/1     Running      0             99m   10.57.12.120   eqvlwso2apsit15-master1   <none>           <none>
+kube-proxy-nzlfj                                  1/1     Running      0             99m   10.57.12.120   eqvlwso2apsit15-master1   <none>           <none>
+kube-scheduler-eqvlwso2apsit15-master1            1/1     Running      0             99m   10.57.12.120   eqvlwso2apsit15-master1   <none>           <none>
+[root@EQVLWSO2APSIT15-Master1 images]# kubectl describe po coredns-66bc5c9577-xjckk -n kube-system
+Name:                 coredns-66bc5c9577-xjckk
+Namespace:            kube-system
+Priority:             2000000000
+Priority Class Name:  system-cluster-critical
+Service Account:      coredns
+Node:                 <none>
+Labels:               k8s-app=kube-dns
+                      pod-template-hash=66bc5c9577
+Annotations:          <none>
+Status:               Pending
+IP:
+IPs:                  <none>
+Controlled By:        ReplicaSet/coredns-66bc5c9577
+Containers:
+  coredns:
+    Image:       registry.k8s.io/coredns/coredns:v1.12.1
+    Ports:       53/UDP (dns), 53/TCP (dns-tcp), 9153/TCP (metrics), 8080/TCP (liveness-probe), 8181/TCP (readiness-probe)
+    Host Ports:  0/UDP (dns), 0/TCP (dns-tcp), 0/TCP (metrics), 0/TCP (liveness-probe), 0/TCP (readiness-probe)
+    Args:
+      -conf
+      /etc/coredns/Corefile
+    Limits:
+      memory:  170Mi
+    Requests:
+      cpu:        100m
+      memory:     70Mi
+    Liveness:     http-get http://:liveness-probe/health delay=60s timeout=5s period=10s #success=1 #failure=5
+    Readiness:    http-get http://:readiness-probe/ready delay=0s timeout=1s period=10s #success=1 #failure=3
+    Environment:  <none>
+    Mounts:
+      /etc/coredns from config-volume (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-wzgx6 (ro)
+Conditions:
+  Type           Status
+  PodScheduled   False
+Volumes:
+  config-volume:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      coredns
+    Optional:  false
+  kube-api-access-wzgx6:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              kubernetes.io/os=linux
+Tolerations:                 CriticalAddonsOnly op=Exists
+                             node-role.kubernetes.io/control-plane:NoSchedule
+                             node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason            Age   From               Message
+  ----     ------            ----  ----               -------
+  Warning  FailedScheduling  41s   default-scheduler  0/1 nodes are available: 1 node(s) had untolerated taint(s). no new claims to deallocate, preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.
+[root@EQVLWSO2APSIT15-Master1 images]#
