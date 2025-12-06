@@ -1,150 +1,78 @@
-[root@EQVLWSO2APSIT15 ~]# cd /run/containerd/
-[root@EQVLWSO2APSIT15 containerd]# ls
-containerd.sock        io.containerd.grpc.v1.cri            io.containerd.runtime.v2.task             runc
-containerd.sock.ttrpc  io.containerd.mount-manager.v1.bolt  io.containerd.sandbox.controller.v1.shim  s
-[root@EQVLWSO2APSIT15 containerd]# sudo rm -rf *
-rm: cannot remove 'io.containerd.grpc.v1.cri/sandboxes/d612b38429fe257b9ad4720857469fbc25e66319b1873eb393520da2b53a7970/shm': Device or resource busy
-rm: cannot remove 'io.containerd.grpc.v1.cri/sandboxes/ca88f8d3cb63dc96716c0f39b5cac285d0930626fa79e7753ad62e0ec726ef81/shm': Device or resource busy
-rm: cannot remove 'io.containerd.grpc.v1.cri/sandboxes/0b8e8f1cb051004280193bad4c4e737751b1207d4719020264f69a776b3f8328/shm': Device or resource busy
-rm: cannot remove 'io.containerd.grpc.v1.cri/sandboxes/6fdd952bae2e1639898cf57c29d468c290116de1cbad23bbed5384517b60e501/shm': Device or resource busy
-rm: cannot remove 'io.containerd.grpc.v1.cri/sandboxes/1977c79f2e909f9d293afb7e93585bc3111af04b5b2f75ffbd2b4ac5c8b2e286/shm': Device or resource busy
-rm: cannot remove 'io.containerd.grpc.v1.cri/sandboxes/7f4d5c6dd6863208691584202d8920e31085836a00663ca4b8424214b50eb1a0/shm': Device or resource busy
-rm: cannot remove 'io.containerd.grpc.v1.cri/sandboxes/e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7/shm': Device or resource busy
-rm: cannot remove 'io.containerd.grpc.v1.cri/sandboxes/d37b7a80dab446fac7661178baa9d494ecaff604d9334d3433821ecd0d6513a2/shm': Device or resource busy
-rm: cannot remove 'io.containerd.grpc.v1.cri/sandboxes/6ed74f1aa0b2491b670f2fa3f66776165a03abb7e40c847e40bf61ea1085a736/shm': Device or resource busy
-rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/532d2dc256e697bf22984b14788843db3a0f1a6d40a544645c633560942d8295/rootfs': Device or resource busy
-rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/d612b38429fe257b9ad4720857469fbc25e66319b1873eb393520da2b53a7970/rootfs': Device or resource busy
-rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/77c28faff0fc904fc71f2c4babcfd0cf14410ce5b718061840238872e7decb70/rootfs': Device or resource busy
-rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/e038ffb9dab1035077a4a9f9c857dcc23319b7e904fd68f1f3b9f284fa87284d/rootfs': Device or resource busy
-rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/ca88f8d3cb63dc96716c0f39b5cac285d0930626fa79e7753ad62e0ec726ef81/rootfs': Device or resource busy
-rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/0b8e8f1cb051004280193bad4c4e737751b1207d4719020264f69a776b3f8328/rootfs': Device or resource busy
-rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/10343554ff4d0445f24e2c26775ce099dfdee6dc4894e3f4d7190ef5bf7e5986/rootfs': Device or resource busy
-rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/6fdd952bae2e1639898cf57c29d468c290116de1cbad23bbed5384517b60e501/rootfs': Device or resource busy
-rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/c573fc64add9d5ad34671031294bcbfb1c9c6b51061d583ceae9b4769b684b77/rootfs': Device or resource busy
-rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/1977c79f2e909f9d293afb7e93585bc3111af04b5b2f75ffbd2b4ac5c8b2e286/rootfs': Device or resource busy
-rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/28a0dba4b4892bf2c73e462fddb7a08c07bcc42650a3d4e4a243efaf9e7a14a9/rootfs': Device or resource busy
-rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/d6d0900d812838a9db848386b8642a8666def7323e56adeccfb3b8941c7863bb/rootfs': Device or resource busy
-rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/afe7d1fdf254993552836cce5e8927ebd5986a70d56afe481f17bb26968d1a44/rootfs': Device or resource busy
-rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/a8756c7db2589413ba053a933d850d30cbe2d2b384de7f462dbc2725a021e273/rootfs': Device or resource busy
-rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/7f4d5c6dd6863208691584202d8920e31085836a00663ca4b8424214b50eb1a0/rootfs': Device or resource busy
-rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7/rootfs': Device or resource busy
-rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/d37b7a80dab446fac7661178baa9d494ecaff604d9334d3433821ecd0d6513a2/rootfs': Device or resource busy
-rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/6ed74f1aa0b2491b670f2fa3f66776165a03abb7e40c847e40bf61ea1085a736/rootfs': Device or resource busy
-[root@EQVLWSO2APSIT15 containerd]#
-
-
-
-
-
-You’re trying to force-delete `/run/containerd` while containerd **is still running** and still holding active mounts (shm mounts + rootfs mounts).
-That’s why the kernel is replying **"Device or resource busy"** — these mounts belong to running pods / containers.
-
-To cleanly delete `/run/containerd`, you **must stop containerd and kubelet**, unmount everything, and then remove the directory.
-
-Here is the correct and safe approach:
-
----
-
-# ✅ **Correct Steps to Completely Remove `/run/containerd` (RHEL 9.x)**
-
-### **1. Stop kubelet**
-
-Kubelet keeps containers alive. Stop it first:
-
-```bash
-sudo systemctl stop kubelet
-```
-
----
-
-### **2. Stop containerd**
-
-```bash
-sudo systemctl stop containerd
-```
-
-Confirm it stopped:
-
-```bash
-ps aux | grep containerd
-```
-
----
-
-### **3. Unmount leftover containerd mount points**
-
-Check all busy mounts:
-
-```bash
-mount | grep containerd
-mount | grep k8s.io
-```
-
-Force-unmount them:
-
-```bash
-sudo umount -l /run/containerd/io.containerd.grpc.v1.cri/sandboxes/*/shm 2>/dev/null
-sudo umount -l /run/containerd/io.containerd.runtime.v2.task/k8s.io/*/rootfs 2>/dev/null
-```
-
-Lazy unmount (`-l`) force removes even if busy.
-
----
-
-### **4. Now remove the directory safely**
-
-```bash
-sudo rm -rf /run/containerd/*
-```
-
-If you also want to fully clean containerd:
-
-```bash
-sudo rm -rf /etc/containerd
-sudo rm -rf /var/lib/containerd
-sudo rm -rf /run/containerd
-```
-
----
-
-# ⚠️ Important Note
-
-These mounts exist **because pods were still running**.
-Stopping kubelet + containerd safely tears them down.
-
-If for some reason containerd refuses to stop:
-
-### Force kill all containerd shims
-
-```bash
-sudo pkill -9 containerd-shim
-sudo pkill -9 containerd
-```
-
-Then try the unmount & deletion again.
-
----
-
-# ✅ **Summary**
-
-| Problem                       | Reason                                   | Fix                                               |
-| ----------------------------- | ---------------------------------------- | ------------------------------------------------- |
-| `rm: Device or resource busy` | containerd still running, holding mounts | Stop kubelet → stop containerd → unmount → remove |
-| Cannot delete rootfs/shm      | Active pod mounts                        | Lazy-unmount `umount -l`                          |
-| Directory not empty           | Shims still alive                        | Kill shims                                        |
-
----
-
-If you want, I can also give you:
-
-✅ A full cleanup script
-or
-✅ Commands to reinstall Docker or containerd cleanly
-or
-✅ Commands to migrate from containerd → Docker safely
-
-Just tell me.
-
-
-[root@EQVLWSO2APSIT15 ~]# sudo lsmod | grep overlay
-overlay               184320  10
+[root@EQVLWSO2APSIT15 images]# kubectl describe pod coredns-66bc5c9577-xcs86 -n kube-system
+Name:                 coredns-66bc5c9577-xcs86
+Namespace:            kube-system
+Priority:             2000000000
+Priority Class Name:  system-cluster-critical
+Service Account:      coredns
+Node:                 eqvlwso2apsit15/10.57.12.120
+Start Time:           Sun, 07 Dec 2025 02:41:24 +0530
+Labels:               k8s-app=kube-dns
+                      pod-template-hash=66bc5c9577
+Annotations:          <none>
+Status:               Pending
+IP:
+IPs:                  <none>
+Controlled By:        ReplicaSet/coredns-66bc5c9577
+Containers:
+  coredns:
+    Container ID:
+    Image:         registry.k8s.io/coredns/coredns:v1.12.1
+    Image ID:
+    Ports:         53/UDP (dns), 53/TCP (dns-tcp), 9153/TCP (metrics), 8080/TCP (liveness-probe), 8181/TCP (readiness-probe)
+    Host Ports:    0/UDP (dns), 0/TCP (dns-tcp), 0/TCP (metrics), 0/TCP (liveness-probe), 0/TCP (readiness-probe)
+    Args:
+      -conf
+      /etc/coredns/Corefile
+    State:          Waiting
+      Reason:       ContainerCreating
+    Ready:          False
+    Restart Count:  0
+    Limits:
+      memory:  170Mi
+    Requests:
+      cpu:        100m
+      memory:     70Mi
+    Liveness:     http-get http://:liveness-probe/health delay=60s timeout=5s period=10s #success=1 #failure=5
+    Readiness:    http-get http://:readiness-probe/ready delay=0s timeout=1s period=10s #success=1 #failure=3
+    Environment:  <none>
+    Mounts:
+      /etc/coredns from config-volume (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-skkht (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   False
+  Initialized                 True
+  Ready                       False
+  ContainersReady             False
+  PodScheduled                True
+Volumes:
+  config-volume:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      coredns
+    Optional:  false
+  kube-api-access-skkht:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              kubernetes.io/os=linux
+Tolerations:                 CriticalAddonsOnly op=Exists
+                             node-role.kubernetes.io/control-plane:NoSchedule
+                             node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason                  Age                 From               Message
+  ----     ------                  ----                ----               -------
+  Normal   Scheduled               4m8s                default-scheduler  Successfully assigned kube-system/coredns-66bc5c9577-xcs86 to eqvlwso2apsit15
+  Warning  FailedCreatePodSandBox  4m8s                kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "1f563d3030099d9baed242fa27276468d10fa0a997838f5780592425d5e1bcda": plugin type="calico" failed (add): error getting ClusterInformation: Get "https://10.96.0.1:443/apis/crd.projectcalico.org/v1/clusterinformations/default": x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "kubernetes")
+  Warning  FailedCreatePodSandBox  3m55s               kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "efe2554996d8a9da0b990b33a762b6af7ea19da46de88dfa86e220fb1ae84dc8": plugin type="calico" failed (add): error getting ClusterInformation: Get "https://10.96.0.1:443/apis/crd.projectcalico.org/v1/clusterinformations/default": x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "kubernetes")
+  Warning  FailedCreatePodSandBox  3m40s               kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "b8ecf64c6d34e72f7f54edd61646d180688f954f2470049895a896bb5766b28c": plugin type="calico" failed (add): error getting ClusterInformation: Get "https://10.96.0.1:443/apis/crd.projectcalico.org/v1/clusterinformations/default": x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "kubernetes")
+  Warning  FailedCreatePodSandBox  3m25s               kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "1b4dbdb3a2b3f1f3e1a9b1a757759658c18aeecec3f77cd7a14fa1fc164b8dea": plugin type="calico" failed (add): error getting ClusterInformation: Get "https://10.96.0.1:443/apis/crd.projectcalico.org/v1/clusterinformations/default": x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "kubernetes")
+  Warning  FailedCreatePodSandBox  3m12s               kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "da0e7261c09bed553721d1f371776685f8aa0ea67bfba8ad9dde47bfc2a15e70": plugin type="calico" failed (add): error getting ClusterInformation: Get "https://10.96.0.1:443/apis/crd.projectcalico.org/v1/clusterinformations/default": x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "kubernetes")
+  Warning  FailedCreatePodSandBox  2m57s               kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "a94641d910bd2dcb30553eb8186805e6bee90cce39175a2e0003501ed343ba5d": plugin type="calico" failed (add): error getting ClusterInformation: Get "https://10.96.0.1:443/apis/crd.projectcalico.org/v1/clusterinformations/default": x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "kubernetes")
+  Warning  FailedCreatePodSandBox  2m44s               kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "b9ddadd979c828cafffd2dd84c8dd5b1b1fbc326353b66a5d2332794cd9d1f5a": plugin type="calico" failed (add): error getting ClusterInformation: Get "https://10.96.0.1:443/apis/crd.projectcalico.org/v1/clusterinformations/default": x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "kubernetes")
+  Warning  FailedCreatePodSandBox  2m30s               kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "31ec296e5cbf0bf31a4adb6f3bb72c764cf1fc7de4b94e38418de9cee7204dce": plugin type="calico" failed (add): error getting ClusterInformation: Get "https://10.96.0.1:443/apis/crd.projectcalico.org/v1/clusterinformations/default": x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "kubernetes")
+  Warning  FailedCreatePodSandBox  2m17s               kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "a63c83e751c557ed199ee7175e74424fc1d5da5dc3f6312fbe4f146fefc59d05": plugin type="calico" failed (add): error getting ClusterInformation: Get "https://10.96.0.1:443/apis/crd.projectcalico.org/v1/clusterinformations/default": x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "kubernetes")
+  Warning  FailedCreatePodSandBox  3s (x10 over 2m5s)  kubelet            (combined from similar events): Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "30b2b8eb308248b126b43e97033f67790872f767ec1c2aeb7ba709bb7c1a747a": plugin type="calico" failed (add): error getting ClusterInformation: Get "https://10.96.0.1:443/apis/crd.projectcalico.org/v1/clusterinformations/default": tls: failed to verify certificate: x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "kubernetes")
