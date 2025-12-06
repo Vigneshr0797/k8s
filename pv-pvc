@@ -1,0 +1,111 @@
+# storageclass.yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: sc-bau
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: Immediate
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: sc-migration
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: Immediate
+
+# pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: bau-logs-pv
+spec:
+  storageClassName: sc-bau
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain  # keeps data until manually deleted
+  volumeMode: Filesystem
+  local:
+    path: /appdata/logs
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - eqvlwso2apsit02
+                - eqvlwso2apsit04
+                - eqvlwso2apsit05
+                - eqvlwso2apsit06
+                - eqvlwso2apsit07
+                - eqvlwso2apsit12
+                - eqvlwso2apsit13
+                - eqvlwso2apsit21
+                - eqvlwso2apsit22
+                - eqvlwso2apsit23
+                - eqvlwso2apsit15
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: migration-logs-pv
+spec:
+  storageClassName: sc-migration
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  volumeMode: Filesystem
+  local:
+    path: /appdata/logs
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - eqvlwso2apsit02
+                - eqvlwso2apsit04
+                - eqvlwso2apsit05
+                - eqvlwso2apsit06
+                - eqvlwso2apsit07
+                - eqvlwso2apsit12
+                - eqvlwso2apsit13
+                - eqvlwso2apsit21
+                - eqvlwso2apsit22
+                - eqvlwso2apsit23
+                - eqvlwso2apsit15
+
+# pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: bau-logs-pvc
+  namespace: springboot-bau
+spec:
+  storageClassName: sc-bau
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: migration-logs-pvc
+  namespace: springboot-migration
+spec:
+  storageClassName: sc-migration
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 10Gi
+
