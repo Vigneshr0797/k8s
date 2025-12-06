@@ -1,219 +1,186 @@
-Your **Calico pods are stuck in Pending/CrashLoopBackOff** because **CNI installation is failing** *and* **Calico cannot talk to the API server due to a Kubernetes certificate trust mismatch**.
-
-Both issues are connected, and I’ll break it down clearly with the exact steps to fix them.
-
----
-
-# ✅ **ISSUE 1 — install-cni is CrashLoopBackOff**
-
-### **Error**
-
-```
-install-cni → Exit Code 1
-```
-
-This means Calico is failing to install `/etc/cni/net.d/10-calico.conflist` on the node.
-
-### Possible causes
-
-1. Old CNI files still exist
-2. Wrong directory permissions
-3. Conflicting CNI plugin (weave, flannel, old calico)
-4. Missing `/opt/cni/bin` or `/etc/cni/net.d` on the host
-5. ContainerD was reinstalled recently (CNI directory emptied)
-
----
-
-# 🔧 **FIX ISSUE 1 — Clean and recreate CNI directories**
-
-### **1. Remove old CNI config**
-
-Run on each node:
-
-```bash
-sudo rm -rf /etc/cni/net.d/*
-sudo rm -rf /var/lib/cni/networks/*
-```
-
----
-
-### **2. Ensure CNI directories exist**
-
-```bash
-sudo mkdir -p /etc/cni/net.d
-sudo mkdir -p /opt/cni/bin
-sudo mkdir -p /var/lib/cni/networks
-```
-
----
-
-### **3. Restart containerd**
-
-```bash
-sudo systemctl restart containerd
-```
-
----
-
-### **4. Restart kubelet**
-
-```bash
-sudo systemctl restart kubelet
-```
-
-Then watch:
-
-```bash
-kubectl get pods -n kube-system -w
-```
-
----
-
-# ❌ **ISSUE 2 — TLS certificate error with API server**
-
-You have this critical error:
-
-```
-tls: failed to verify certificate: x509: certificate signed by unknown authority
-```
-
-This means **Calico does not trust the Kube API Server certificate**.
-
-### This **always happens** when:
-
-* You **reinstalled containerd** or deleted `/var/lib/kubelet/pki`
-* You regenerated cluster certificates (maybe due to upgrade)
-* The API server certificate changed but the node still has old CA certs
-
----
-
-# 🔧 **FIX ISSUE 2 — Replace API server CA on all nodes**
-
-### **1. Verify CA file mounted by kubelet**
-
-The CA used by Calico is:
-
-```
-/etc/kubernetes/pki/ca.crt
-```
-
-On the node compare:
-
-```bash
-openssl x509 -in /etc/kubernetes/pki/ca.crt -noout -fingerprint
-```
-
-Compare with API server cert:
-
-```bash
-openssl s_client -connect 10.96.0.1:443 -showcerts </dev/null 2>/dev/null | openssl x509 -noout -fingerprint
-```
-
-If fingerprints differ → **Kubelet CA is invalid**.
-
----
-
-### **2. Replace incorrect CA**
-
-Copy CA from master node:
-
-```bash
-scp root@<control-plane>:/etc/kubernetes/pki/ca.crt /etc/kubernetes/pki/ca.crt
-```
-
----
-
-### **3. Restart kubelet**
-
-```bash
-sudo systemctl restart kubelet
-```
-
----
-
-### **4. Verify API access**
-
-From node:
-
-```bash
-curl --cacert /etc/kubernetes/pki/ca.crt https://10.96.0.1:443/version
-```
-
-Should return JSON.
-
----
-
-# 🧩 WHY ARE BOTH PODS STUCK?
-
-### **calico-node**
-
-Cannot install CNI → CrashLoopBackOff
-
-### **calico-kube-controllers**
-
-Cannot communicate with API because of CA mismatch:
-
-```
-x509: certificate signed by unknown authority
-```
-
-Until both problems are fixed, Calico will never start.
-
----
-
-# 💯 **FINAL CHECKLIST — Run in order**
-
-### **Step 1 — Cleanup CNI directories**
-
-```
-rm -rf /etc/cni/net.d/*
-rm -rf /var/lib/cni/networks/*
-```
-
-### **Step 2 — Ensure CNI directories exist**
-
-```
-mkdir -p /etc/cni/net.d /opt/cni/bin /var/lib/cni/networks
-```
-
-### **Step 3 — Fix Kubernetes CA mismatch**
-
-Replace `/etc/kubernetes/pki/ca.crt` with the correct one.
-
-### **Step 4 — Restart services**
-
-```
-systemctl restart containerd
-systemctl restart kubelet
-```
-
-### **Step 5 — Delete stuck Calico pods**
-
-```
-kubectl delete pod -n kube-system -l k8s-app=calico-node
-kubectl delete pod -n kube-system -l k8s-app=calico-kube-controllers
-```
-
-They will recreate automatically.
-
----
-
-# If you want, I can:
-
-✔ Check logs from Calico:
-
-```
-kubectl logs <pod> -n kube-system -c install-cni
-```
-
-✔ Validate your CA file
-✔ Help rebuild Calico YAML with correct settings
-✔ Verify API server certificate chain
-
-Just send me:
-
-```
-journalctl -u kubelet -f | head -n 50
-```
-
-I’ll guide you line by line.
+[root@EQVLWSO2APSIT15 images]# kubectl get po -n kube-system
+NAME                                       READY   STATUS       RESTARTS      AGE
+calico-kube-controllers-6ffb5df975-hcxlm   0/1     Pending      0             14s
+calico-node-9hscg                          0/1     Init:Error   1 (13s ago)   14s
+coredns-66bc5c9577-7jkv8                   0/1     Pending      0             69s
+coredns-66bc5c9577-lkg4m                   0/1     Pending      0             69s
+etcd-eqvlwso2apsit15                       1/1     Running      0             77s
+kube-apiserver-eqvlwso2apsit15             1/1     Running      0             77s
+kube-controller-manager-eqvlwso2apsit15    1/1     Running      0             77s
+kube-proxy-cx6jn                           1/1     Running      0             69s
+kube-scheduler-eqvlwso2apsit15             1/1     Running      0             77s
+[root@EQVLWSO2APSIT15 images]# kubectl get po -n kube-system
+NAME                                       READY   STATUS       RESTARTS      AGE
+calico-kube-controllers-6ffb5df975-hcxlm   0/1     Pending      0             20s
+calico-node-9hscg                          0/1     Init:Error   2 (18s ago)   20s
+coredns-66bc5c9577-7jkv8                   0/1     Pending      0             75s
+coredns-66bc5c9577-lkg4m                   0/1     Pending      0             75s
+etcd-eqvlwso2apsit15                       1/1     Running      0             83s
+kube-apiserver-eqvlwso2apsit15             1/1     Running      0             83s
+kube-controller-manager-eqvlwso2apsit15    1/1     Running      0             83s
+kube-proxy-cx6jn                           1/1     Running      0             75s
+kube-scheduler-eqvlwso2apsit15             1/1     Running      0             83s
+[root@EQVLWSO2APSIT15 images]# kubectl describe pod coredns-66bc5c9577-lkg4m -n kube-system
+Name:                 coredns-66bc5c9577-lkg4m
+Namespace:            kube-system
+Priority:             2000000000
+Priority Class Name:  system-cluster-critical
+Service Account:      coredns
+Node:                 <none>
+Labels:               k8s-app=kube-dns
+                      pod-template-hash=66bc5c9577
+Annotations:          <none>
+Status:               Pending
+IP:
+IPs:                  <none>
+Controlled By:        ReplicaSet/coredns-66bc5c9577
+Containers:
+  coredns:
+    Image:       registry.k8s.io/coredns/coredns:v1.12.1
+    Ports:       53/UDP (dns), 53/TCP (dns-tcp), 9153/TCP (metrics), 8080/TCP (liveness-probe), 8181/TCP (readiness-probe)
+    Host Ports:  0/UDP (dns), 0/TCP (dns-tcp), 0/TCP (metrics), 0/TCP (liveness-probe), 0/TCP (readiness-probe)
+    Args:
+      -conf
+      /etc/coredns/Corefile
+    Limits:
+      memory:  170Mi
+    Requests:
+      cpu:        100m
+      memory:     70Mi
+    Liveness:     http-get http://:liveness-probe/health delay=60s timeout=5s period=10s #success=1 #failure=5
+    Readiness:    http-get http://:readiness-probe/ready delay=0s timeout=1s period=10s #success=1 #failure=3
+    Environment:  <none>
+    Mounts:
+      /etc/coredns from config-volume (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-gslt7 (ro)
+Conditions:
+  Type           Status
+  PodScheduled   False
+Volumes:
+  config-volume:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      coredns
+    Optional:  false
+  kube-api-access-gslt7:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              kubernetes.io/os=linux
+Tolerations:                 CriticalAddonsOnly op=Exists
+                             node-role.kubernetes.io/control-plane:NoSchedule
+                             node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason            Age   From               Message
+  ----     ------            ----  ----               -------
+  Warning  FailedScheduling  101s  default-scheduler  0/1 nodes are available: 1 node(s) had untolerated taint(s). no new claims to deallocate, preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.
+[root@EQVLWSO2APSIT15 images]# kubectl get nodes
+NAME              STATUS     ROLES           AGE    VERSION
+eqvlwso2apsit15   NotReady   control-plane   118s   v1.34.2
+[root@EQVLWSO2APSIT15 images]# kubectl describe node eqvlwso2apsit15
+Name:               eqvlwso2apsit15
+Roles:              control-plane
+Labels:             beta.kubernetes.io/arch=amd64
+                    beta.kubernetes.io/os=linux
+                    kubernetes.io/arch=amd64
+                    kubernetes.io/hostname=eqvlwso2apsit15
+                    kubernetes.io/os=linux
+                    node-role.kubernetes.io/control-plane=
+                    node.kubernetes.io/exclude-from-external-load-balancers=
+Annotations:        node.alpha.kubernetes.io/ttl: 0
+                    volumes.kubernetes.io/controller-managed-attach-detach: true
+CreationTimestamp:  Sun, 07 Dec 2025 03:17:08 +0530
+Taints:             node.kubernetes.io/not-ready:NoExecute
+                    node-role.kubernetes.io/control-plane:NoSchedule
+                    node.kubernetes.io/not-ready:NoSchedule
+Unschedulable:      false
+Lease:
+  HolderIdentity:  eqvlwso2apsit15
+  AcquireTime:     <unset>
+  RenewTime:       Sun, 07 Dec 2025 03:19:13 +0530
+Conditions:
+  Type             Status  LastHeartbeatTime                 LastTransitionTime                Reason                       Message
+  ----             ------  -----------------                 ------------------                ------                       -------
+  MemoryPressure   False   Sun, 07 Dec 2025 03:17:10 +0530   Sun, 07 Dec 2025 03:17:07 +0530   KubeletHasSufficientMemory   kubelet has sufficient memory available
+  DiskPressure     False   Sun, 07 Dec 2025 03:17:10 +0530   Sun, 07 Dec 2025 03:17:07 +0530   KubeletHasNoDiskPressure     kubelet has no disk pressure
+  PIDPressure      False   Sun, 07 Dec 2025 03:17:10 +0530   Sun, 07 Dec 2025 03:17:07 +0530   KubeletHasSufficientPID      kubelet has sufficient PID available
+  Ready            False   Sun, 07 Dec 2025 03:17:10 +0530   Sun, 07 Dec 2025 03:17:07 +0530   KubeletNotReady              container runtime network not ready: NetworkReady=false reason:NetworkPluginNotReady message:Network plugin returns error: cni plugin not initialized
+Addresses:
+  InternalIP:  10.57.12.120
+  Hostname:    eqvlwso2apsit15
+Capacity:
+  cpu:                4
+  ephemeral-storage:  81856Mi
+  hugepages-1Gi:      0
+  hugepages-2Mi:      0
+  memory:             15909564Ki
+  pods:               110
+Allocatable:
+  cpu:                4
+  ephemeral-storage:  77249013223
+  hugepages-1Gi:      0
+  hugepages-2Mi:      0
+  memory:             15807164Ki
+  pods:               110
+System Info:
+  Machine ID:                 fe81e954866144f181f4eef820013c28
+  System UUID:                55181e42-1891-e6e3-b6e7-5f5a0c78669b
+  Boot ID:                    4c5d20b5-f8fb-48de-8731-94cfcd5ec999
+  Kernel Version:             5.15.0-314.193.5.4.el9uek.x86_64
+  OS Image:                   Oracle Linux Server 9.6
+  Operating System:           linux
+  Architecture:               amd64
+  Container Runtime Version:  containerd://2.2.0
+  Kubelet Version:            v1.34.2
+  Kube-Proxy Version:
+PodCIDR:                      10.57.16.0/24
+PodCIDRs:                     10.57.16.0/24
+Non-terminated Pods:          (6 in total)
+  Namespace                   Name                                       CPU Requests  CPU Limits  Memory Requests  Memory Limits  Age
+  ---------                   ----                                       ------------  ----------  ---------------  -------------  ---
+  kube-system                 calico-node-9hscg                          250m (6%)     0 (0%)      0 (0%)           0 (0%)         67s
+  kube-system                 etcd-eqvlwso2apsit15                       100m (2%)     0 (0%)      100Mi (0%)       0 (0%)         2m10s
+  kube-system                 kube-apiserver-eqvlwso2apsit15             250m (6%)     0 (0%)      0 (0%)           0 (0%)         2m10s
+  kube-system                 kube-controller-manager-eqvlwso2apsit15    200m (5%)     0 (0%)      0 (0%)           0 (0%)         2m10s
+  kube-system                 kube-proxy-cx6jn                           0 (0%)        0 (0%)      0 (0%)           0 (0%)         2m2s
+  kube-system                 kube-scheduler-eqvlwso2apsit15             100m (2%)     0 (0%)      0 (0%)           0 (0%)         2m10s
+Allocated resources:
+  (Total limits may be over 100 percent, i.e., overcommitted.)
+  Resource           Requests    Limits
+  --------           --------    ------
+  cpu                900m (22%)  0 (0%)
+  memory             100Mi (0%)  0 (0%)
+  ephemeral-storage  0 (0%)      0 (0%)
+  hugepages-1Gi      0 (0%)      0 (0%)
+  hugepages-2Mi      0 (0%)      0 (0%)
+Events:
+  Type     Reason                   Age                    From             Message
+  ----     ------                   ----                   ----             -------
+  Normal   Starting                 2m1s                   kube-proxy
+  Warning  InvalidDiskCapacity      2m14s                  kubelet          invalid capacity 0 on image filesystem
+  Normal   NodeHasSufficientMemory  2m14s (x8 over 2m14s)  kubelet          Node eqvlwso2apsit15 status is now: NodeHasSufficientMemory
+  Normal   NodeHasNoDiskPressure    2m14s (x8 over 2m14s)  kubelet          Node eqvlwso2apsit15 status is now: NodeHasNoDiskPressure
+  Normal   NodeHasSufficientPID     2m14s (x7 over 2m14s)  kubelet          Node eqvlwso2apsit15 status is now: NodeHasSufficientPID
+  Normal   NodeAllocatableEnforced  2m14s                  kubelet          Updated Node Allocatable limit across pods
+  Normal   Starting                 2m10s                  kubelet          Starting kubelet.
+  Warning  InvalidDiskCapacity      2m10s                  kubelet          invalid capacity 0 on image filesystem
+  Normal   NodeAllocatableEnforced  2m10s                  kubelet          Updated Node Allocatable limit across pods
+  Normal   NodeHasSufficientMemory  2m10s                  kubelet          Node eqvlwso2apsit15 status is now: NodeHasSufficientMemory
+  Normal   NodeHasNoDiskPressure    2m10s                  kubelet          Node eqvlwso2apsit15 status is now: NodeHasNoDiskPressure
+  Normal   NodeHasSufficientPID     2m10s                  kubelet          Node eqvlwso2apsit15 status is now: NodeHasSufficientPID
+  Normal   RegisteredNode           2m3s                   node-controller  Node eqvlwso2apsit15 event: Registered Node eqvlwso2apsit15 in Controller
+[root@EQVLWSO2APSIT15 images]# kubectl get po -n kube-system
+NAME                                       READY   STATUS                  RESTARTS      AGE
+calico-kube-controllers-6ffb5df975-hcxlm   0/1     Pending                 0             78s
+calico-node-9hscg                          0/1     Init:CrashLoopBackOff   3 (31s ago)   78s
+coredns-66bc5c9577-7jkv8                   0/1     Pending                 0             2m13s
+coredns-66bc5c9577-lkg4m                   0/1     Pending                 0             2m13s
+etcd-eqvlwso2apsit15                       1/1     Running                 0             2m21s
+kube-apiserver-eqvlwso2apsit15             1/1     Running                 0             2m21s
+kube-controller-manager-eqvlwso2apsit15    1/1     Running                 0             2m21s
+kube-proxy-cx6jn                           1/1     Running                 0             2m13s
+kube-scheduler-eqvlwso2apsit15             1/1     Running                 0             2m21s
+[root@EQVLWSO2APSIT15 images]#
