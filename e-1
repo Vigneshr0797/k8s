@@ -1,4 +1,33 @@
-[appuser@EQVLWSO2APSIT15 ~]$ sudo crictl info
-DEBU[0000] Get runtime connection
-DEBU[0000] Using runtime connection timeout: 10s
-FATA[0000] validate service connection: validate CRI v1 runtime API for endpoint "unix:///run/containerd/containerd.sock": rpc error: code = Unimplemented desc = unknown service runtime.v1.RuntimeService
+[appuser@EQVLWSO2APSIT15-Master1 script-files]$ sudo ctr -n k8s.io images  push harbour.equitasbank.com/calico/cni:v3.25.0
+harbour.equitasbank.com/calico/cni:v3.25        pushing content
+└──index (a38d53cb8688)                         waiting         |--------------------------------------|
+   ├──manifest (fa69079a2615)                   waiting         |--------------------------------------|
+   │  ├──config (af3dd770eed5)                  already exists
+   │  ├──layer (bc84ed7b6a65)                   already exists
+   │  ├──layer (2a5215839585)                   waiting         |--------------------------------------|
+   │  └──layer (4f4fb700ef54)                   waiting         |--------------------------------------|
+   ├──manifest (c5c65de9d629)                   waiting         |--------------------------------------|
+   │  ├──config (00a5d3d3b9a0)                  already exists
+   │  ├──layer (bc84ed7b6a65)                   already exists
+   │  ├──layer (ae5822c70dac)                   already exists
+   │  ├──layer (4f4fb700ef54)                   waiting         |--------------------------------------|
+   │  └──layer (7c950dda3f50)                   waiting         |--------------------------------------|
+   ├──manifest (0ec3ba054c2d)                   waiting         |--------------------------------------|
+   │  ├──layer (bc84ed7b6a65)                   already exists
+   │  ├──config (0bb8d6f033a0)                  already exists
+   │  ├──layer (ae5822c70dac)                   already exists
+   │  └──layer (4f4fb700ef54)                   waiting         |--------------------------------------|
+   ├──manifest (ec0fa42b4d03)                   waiting         |--------------------------------------|
+   │  ├──layer (bc84ed7b6a65)                   already exists
+   │  ├──config (d70a5947d57e)                  already exists
+   │  ├──layer (ae5822c70dac)                   already exists
+   │  ├──layer (4f4fb700ef54)                   waiting         |--------------------------------------|
+   │  └──layer (5e4c3414e9ca)                   waiting         |--------------------------------------|
+   └──manifest (090770456487)                   waiting         |--------------------------------------|
+      ├──layer (bc84ed7b6a65)                   already exists
+      ├──config (9492a2bd8aac)                  already exists
+      ├──layer (ae5822c70dac)                   already exists
+      └──layer (4f4fb700ef54)                   waiting         |--------------------------------------|
+application/vnd.docker.distribution.manifest.list.v2+json sha256:a38d53cb8688944eafede2f0eadc478b1b403cefeff7953da57fe9cd2d65e977
+Pushing to OCI Registry (harbour.equitasbank.com/calico/cni:v3.25.0)    elapsed: 0.2 s  total:  114.4   (636.1 KiB/s)
+ctr: push access denied, repository does not exist or may require authorization: authorization failed: no basic auth credentials
