@@ -1,78 +1,136 @@
-[root@EQVLWSO2APSIT15 images]# kubectl describe pod coredns-66bc5c9577-xcs86 -n kube-system
-Name:                 coredns-66bc5c9577-xcs86
-Namespace:            kube-system
-Priority:             2000000000
-Priority Class Name:  system-cluster-critical
-Service Account:      coredns
-Node:                 eqvlwso2apsit15/10.57.12.120
-Start Time:           Sun, 07 Dec 2025 02:41:24 +0530
-Labels:               k8s-app=kube-dns
-                      pod-template-hash=66bc5c9577
-Annotations:          <none>
-Status:               Pending
-IP:
-IPs:                  <none>
-Controlled By:        ReplicaSet/coredns-66bc5c9577
-Containers:
-  coredns:
-    Container ID:
-    Image:         registry.k8s.io/coredns/coredns:v1.12.1
-    Image ID:
-    Ports:         53/UDP (dns), 53/TCP (dns-tcp), 9153/TCP (metrics), 8080/TCP (liveness-probe), 8181/TCP (readiness-probe)
-    Host Ports:    0/UDP (dns), 0/TCP (dns-tcp), 0/TCP (metrics), 0/TCP (liveness-probe), 0/TCP (readiness-probe)
-    Args:
-      -conf
-      /etc/coredns/Corefile
-    State:          Waiting
-      Reason:       ContainerCreating
-    Ready:          False
-    Restart Count:  0
-    Limits:
-      memory:  170Mi
-    Requests:
-      cpu:        100m
-      memory:     70Mi
-    Liveness:     http-get http://:liveness-probe/health delay=60s timeout=5s period=10s #success=1 #failure=5
-    Readiness:    http-get http://:readiness-probe/ready delay=0s timeout=1s period=10s #success=1 #failure=3
-    Environment:  <none>
-    Mounts:
-      /etc/coredns from config-volume (ro)
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-skkht (ro)
-Conditions:
-  Type                        Status
-  PodReadyToStartContainers   False
-  Initialized                 True
-  Ready                       False
-  ContainersReady             False
-  PodScheduled                True
-Volumes:
-  config-volume:
-    Type:      ConfigMap (a volume populated by a ConfigMap)
-    Name:      coredns
-    Optional:  false
-  kube-api-access-skkht:
-    Type:                    Projected (a volume that contains injected data from multiple sources)
-    TokenExpirationSeconds:  3607
-    ConfigMapName:           kube-root-ca.crt
-    Optional:                false
-    DownwardAPI:             true
-QoS Class:                   Burstable
-Node-Selectors:              kubernetes.io/os=linux
-Tolerations:                 CriticalAddonsOnly op=Exists
-                             node-role.kubernetes.io/control-plane:NoSchedule
-                             node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
-                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
-Events:
-  Type     Reason                  Age                 From               Message
-  ----     ------                  ----                ----               -------
-  Normal   Scheduled               4m8s                default-scheduler  Successfully assigned kube-system/coredns-66bc5c9577-xcs86 to eqvlwso2apsit15
-  Warning  FailedCreatePodSandBox  4m8s                kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "1f563d3030099d9baed242fa27276468d10fa0a997838f5780592425d5e1bcda": plugin type="calico" failed (add): error getting ClusterInformation: Get "https://10.96.0.1:443/apis/crd.projectcalico.org/v1/clusterinformations/default": x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "kubernetes")
-  Warning  FailedCreatePodSandBox  3m55s               kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "efe2554996d8a9da0b990b33a762b6af7ea19da46de88dfa86e220fb1ae84dc8": plugin type="calico" failed (add): error getting ClusterInformation: Get "https://10.96.0.1:443/apis/crd.projectcalico.org/v1/clusterinformations/default": x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "kubernetes")
-  Warning  FailedCreatePodSandBox  3m40s               kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "b8ecf64c6d34e72f7f54edd61646d180688f954f2470049895a896bb5766b28c": plugin type="calico" failed (add): error getting ClusterInformation: Get "https://10.96.0.1:443/apis/crd.projectcalico.org/v1/clusterinformations/default": x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "kubernetes")
-  Warning  FailedCreatePodSandBox  3m25s               kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "1b4dbdb3a2b3f1f3e1a9b1a757759658c18aeecec3f77cd7a14fa1fc164b8dea": plugin type="calico" failed (add): error getting ClusterInformation: Get "https://10.96.0.1:443/apis/crd.projectcalico.org/v1/clusterinformations/default": x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "kubernetes")
-  Warning  FailedCreatePodSandBox  3m12s               kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "da0e7261c09bed553721d1f371776685f8aa0ea67bfba8ad9dde47bfc2a15e70": plugin type="calico" failed (add): error getting ClusterInformation: Get "https://10.96.0.1:443/apis/crd.projectcalico.org/v1/clusterinformations/default": x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "kubernetes")
-  Warning  FailedCreatePodSandBox  2m57s               kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "a94641d910bd2dcb30553eb8186805e6bee90cce39175a2e0003501ed343ba5d": plugin type="calico" failed (add): error getting ClusterInformation: Get "https://10.96.0.1:443/apis/crd.projectcalico.org/v1/clusterinformations/default": x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "kubernetes")
-  Warning  FailedCreatePodSandBox  2m44s               kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "b9ddadd979c828cafffd2dd84c8dd5b1b1fbc326353b66a5d2332794cd9d1f5a": plugin type="calico" failed (add): error getting ClusterInformation: Get "https://10.96.0.1:443/apis/crd.projectcalico.org/v1/clusterinformations/default": x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "kubernetes")
-  Warning  FailedCreatePodSandBox  2m30s               kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "31ec296e5cbf0bf31a4adb6f3bb72c764cf1fc7de4b94e38418de9cee7204dce": plugin type="calico" failed (add): error getting ClusterInformation: Get "https://10.96.0.1:443/apis/crd.projectcalico.org/v1/clusterinformations/default": x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "kubernetes")
-  Warning  FailedCreatePodSandBox  2m17s               kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "a63c83e751c557ed199ee7175e74424fc1d5da5dc3f6312fbe4f146fefc59d05": plugin type="calico" failed (add): error getting ClusterInformation: Get "https://10.96.0.1:443/apis/crd.projectcalico.org/v1/clusterinformations/default": x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "kubernetes")
-  Warning  FailedCreatePodSandBox  3s (x10 over 2m5s)  kubelet            (combined from similar events): Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "30b2b8eb308248b126b43e97033f67790872f767ec1c2aeb7ba709bb7c1a747a": plugin type="calico" failed (add): error getting ClusterInformation: Get "https://10.96.0.1:443/apis/crd.projectcalico.org/v1/clusterinformations/default": tls: failed to verify certificate: x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "kubernetes")
+I understand that you want to completely remove Kubernetes, its container runtime (`containerd`), CNI plugins, Calico, and related files from your system. This is essentially a **full Kubernetes cleanup** on your node. Be **very careful**, as this will completely remove all Kubernetes configurations, containers, and networking setups.
+
+Here’s a step-by-step approach:
+
+---
+
+### **1. Stop Kubernetes services**
+
+```bash
+sudo systemctl stop kubelet
+sudo systemctl stop containerd
+sudo systemctl stop kube-proxy
+```
+
+If you have Docker installed and used:
+
+```bash
+sudo systemctl stop docker
+```
+
+---
+
+### **2. Remove Kubernetes binaries**
+
+```bash
+sudo rm -f /usr/bin/kubeadm /usr/bin/kubectl /usr/bin/kubelet /usr/bin/kube-proxy
+sudo rm -f /etc/systemd/system/kubelet.service
+sudo rm -rf /etc/kubernetes/
+sudo rm -rf /var/lib/kubelet
+sudo rm -rf /var/lib/etcd
+```
+
+---
+
+### **3. Remove containerd**
+
+```bash
+sudo systemctl stop containerd
+sudo rm -rf /etc/containerd
+sudo rm -rf /var/lib/containerd
+sudo rm -rf /run/containerd
+sudo dnf remove -y containerd
+```
+
+Check for running containerd processes:
+
+```bash
+ps aux | grep containerd
+```
+
+Kill any remaining processes if needed:
+
+```bash
+sudo pkill containerd
+```
+
+---
+
+### **4. Remove CNI plugins**
+
+```bash
+sudo rm -rf /etc/cni/net.d
+sudo rm -rf /opt/cni/bin
+sudo rm -rf /var/lib/cni/
+```
+
+---
+
+### **5. Remove Calico**
+
+```bash
+sudo rm -rf /var/lib/calico
+sudo rm -rf /var/run/calico
+sudo rm -rf /etc/calico
+```
+
+If Calico pods are still running:
+
+```bash
+kubectl delete ns kube-system --force --grace-period=0
+```
+
+> Note: This is destructive and will delete all system pods.
+
+---
+
+### **6. Remove network interfaces and overlays**
+
+Check for leftover interfaces:
+
+```bash
+ip link show
+```
+
+Remove Calico interfaces (they usually start with `cali`):
+
+```bash
+sudo ip link delete caliXXXX
+```
+
+Unload overlay kernel module if needed:
+
+```bash
+sudo modprobe -r overlay
+```
+
+---
+
+### **7. Remove remaining Kubernetes configs and logs**
+
+```bash
+sudo rm -rf ~/.kube
+sudo rm -rf /var/log/pods
+sudo rm -rf /var/log/containers
+sudo rm -rf /var/run/kubernetes
+```
+
+---
+
+### **8. Optional: reboot**
+
+After removing everything:
+
+```bash
+sudo reboot
+```
+
+---
+
+✅ After this, your node will be completely clean, and you can reinstall Kubernetes and containerd from scratch.
+
+---
+
+If you want, I can give you a **single shell script** that does **everything safely in the correct order** to completely wipe Kubernetes + containerd + CNI + Calico from your system.
+
+Do you want me to do that?
