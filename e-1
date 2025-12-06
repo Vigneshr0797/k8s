@@ -1,303 +1,81 @@
-[root@EQVLWSO2APSIT02 containerd]# cat config.toml
-disabled_plugins = []
-imports = []
-oom_score = 0
-plugin_dir = ""
-required_plugins = []
-root = "/var/lib/containerd"
-state = "/run/containerd"
-temp = ""
-version = 2
-
-[cgroup]
-  path = ""
-
-[debug]
-  address = ""
-  format = ""
-  gid = 0
-  level = ""
-  uid = 0
-
-[grpc]
-  address = "/run/containerd/containerd.sock"
-  gid = 0
-  max_recv_message_size = 16777216
-  max_send_message_size = 16777216
-  tcp_address = ""
-  tcp_tls_ca = ""
-  tcp_tls_cert = ""
-  tcp_tls_key = ""
-  uid = 0
-
-[metrics]
-  address = ""
-  grpc_histogram = false
-
-[plugins]
-
-  [plugins."io.containerd.gc.v1.scheduler"]
-    deletion_threshold = 0
-    mutation_threshold = 100
-    pause_threshold = 0.02
-    schedule_delay = "0s"
-    startup_delay = "100ms"
-
-  [plugins."io.containerd.grpc.v1.cri"]
-    device_ownership_from_security_context = false
-    disable_apparmor = false
-    disable_cgroup = false
-    disable_hugetlb_controller = true
-    disable_proc_mount = false
-    disable_tcp_service = true
-    enable_selinux = false
-    enable_tls_streaming = false
-    enable_unprivileged_icmp = false
-    enable_unprivileged_ports = false
-    ignore_image_defined_volumes = false
-    max_concurrent_downloads = 3
-    max_container_log_line_size = 16384
-    netns_mounts_under_state_dir = false
-    restrict_oom_score_adj = false
-    sandbox_image = "registry.k8s.io/pause:3.6"
-    selinux_category_range = 1024
-    stats_collect_period = 10
-    stream_idle_timeout = "4h0m0s"
-    stream_server_address = "127.0.0.1"
-    stream_server_port = "0"
-    systemd_cgroup = false
-    tolerate_missing_hugetlb_controller = true
-    unset_seccomp_profile = ""
-
-    [plugins."io.containerd.grpc.v1.cri".cni]
-      bin_dir = "/opt/cni/bin"
-      conf_dir = "/etc/cni/net.d"
-      conf_template = ""
-      ip_pref = ""
-      max_conf_num = 1
-
-    [plugins."io.containerd.grpc.v1.cri".containerd]
-      default_runtime_name = "runc"
-      disable_snapshot_annotations = true
-      discard_unpacked_layers = false
-      ignore_rdt_not_enabled_errors = false
-      no_pivot = false
-      snapshotter = "overlayfs"
-
-      [plugins."io.containerd.grpc.v1.cri".containerd.default_runtime]
-        base_runtime_spec = ""
-        cni_conf_dir = ""
-        cni_max_conf_num = 0
-        container_annotations = []
-        pod_annotations = []
-        privileged_without_host_devices = false
-        runtime_engine = ""
-        runtime_path = ""
-        runtime_root = ""
-        runtime_type = ""
-
-        [plugins."io.containerd.grpc.v1.cri".containerd.default_runtime.options]
-
-      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
-
-        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
-          base_runtime_spec = ""
-          cni_conf_dir = ""
-          cni_max_conf_num = 0
-          container_annotations = []
-          pod_annotations = []
-          privileged_without_host_devices = false
-          runtime_engine = ""
-          runtime_path = ""
-          runtime_root = ""
-          runtime_type = "io.containerd.runc.v2"
-
-          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
-            BinaryName = ""
-            CriuImagePath = ""
-            CriuPath = ""
-            CriuWorkPath = ""
-            IoGid = 0
-            IoUid = 0
-            NoNewKeyring = false
-            NoPivotRoot = false
-            Root = ""
-            ShimCgroup = ""
-            SystemdCgroup = true
-
-      [plugins."io.containerd.grpc.v1.cri".containerd.untrusted_workload_runtime]
-        base_runtime_spec = ""
-        cni_conf_dir = ""
-        cni_max_conf_num = 0
-        container_annotations = []
-        pod_annotations = []
-        privileged_without_host_devices = false
-        runtime_engine = ""
-        runtime_path = ""
-        runtime_root = ""
-        runtime_type = ""
-
-        [plugins."io.containerd.grpc.v1.cri".containerd.untrusted_workload_runtime.options]
-
-    [plugins."io.containerd.grpc.v1.cri".image_decryption]
-      key_model = "node"
-
-    [plugins."io.containerd.grpc.v1.cri".registry]
-      config_path = ""
-      [plugins."io.containerd.grpc.v1.cri".registry.auths]
-                  [plugins."io.containerd.grpc.v1.cri".registry.configs."harbour.equitasbank.com".auth]
-                    username = "admin"
-                    password = "Harbor12345"
-
-                [plugins."io.containerd.grpc.v1.cri".registry.configs]
-                  [plugins."io.containerd.grpc.v1.cri".registry.configs."harbour.equitasbank.com"]
-
-                [plugins."io.containerd.grpc.v1.cri".registry.headers]
-
-                [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
-                  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."harbour.equitasbank.com"]
-                    endpoint = ["https://harbour.equitasbank.com"]
-
-    [plugins."io.containerd.grpc.v1.cri".x509_key_pair_streaming]
-      tls_cert_file = ""
-      tls_key_file = ""
-
-  [plugins."io.containerd.internal.v1.opt"]
-    path = "/opt/containerd"
-
-  [plugins."io.containerd.internal.v1.restart"]
-    interval = "10s"
-
-  [plugins."io.containerd.internal.v1.tracing"]
-    sampling_ratio = 1.0
-    service_name = "containerd"
-
-  [plugins."io.containerd.metadata.v1.bolt"]
-    content_sharing_policy = "shared"
-
-  [plugins."io.containerd.monitor.v1.cgroups"]
-    no_prometheus = false
-
-  [plugins."io.containerd.runtime.v1.linux"]
-    no_shim = false
-    runtime = "runc"
-    runtime_root = ""
-    shim = "containerd-shim"
-    shim_debug = false
-
-  [plugins."io.containerd.runtime.v2.task"]
-    platforms = ["linux/amd64"]
-    sched_core = false
-
-  [plugins."io.containerd.service.v1.diff-service"]
-    default = ["walking"]
-
-  [plugins."io.containerd.service.v1.tasks-service"]
-    rdt_config_file = ""
-
-  [plugins."io.containerd.snapshotter.v1.aufs"]
-    root_path = ""
-
-  [plugins."io.containerd.snapshotter.v1.devmapper"]
-    async_remove = false
-    base_image_size = ""
-    discard_blocks = false
-    fs_options = ""
-    fs_type = ""
-    pool_name = ""
-    root_path = ""
-
-  [plugins."io.containerd.snapshotter.v1.native"]
-    root_path = ""
-
-  [plugins."io.containerd.snapshotter.v1.overlayfs"]
-    mount_options = []
-    root_path = ""
-    sync_remove = false
-    upperdir_label = false
-
-  [plugins."io.containerd.snapshotter.v1.zfs"]
-    root_path = ""
-
-  [plugins."io.containerd.tracing.processor.v1.otlp"]
-    endpoint = ""
-    insecure = false
-    protocol = ""
-
-[proxy_plugins]
-
-[stream_processors]
-
-  [stream_processors."io.containerd.ocicrypt.decoder.v1.tar"]
-    accepts = ["application/vnd.oci.image.layer.v1.tar+encrypted"]
-    args = ["--decryption-keys-path", "/etc/containerd/ocicrypt/keys"]
-    env = ["OCICRYPT_KEYPROVIDER_CONFIG=/etc/containerd/ocicrypt/ocicrypt_keyprovider.conf"]
-    path = "ctd-decoder"
-    returns = "application/vnd.oci.image.layer.v1.tar"
-
-  [stream_processors."io.containerd.ocicrypt.decoder.v1.tar.gzip"]
-    accepts = ["application/vnd.oci.image.layer.v1.tar+gzip+encrypted"]
-    args = ["--decryption-keys-path", "/etc/containerd/ocicrypt/keys"]
-    env = ["OCICRYPT_KEYPROVIDER_CONFIG=/etc/containerd/ocicrypt/ocicrypt_keyprovider.conf"]
-    path = "ctd-decoder"
-    returns = "application/vnd.oci.image.layer.v1.tar+gzip"
-
-[timeouts]
-  "io.containerd.timeout.bolt.open" = "0s"
-  "io.containerd.timeout.shim.cleanup" = "5s"
-  "io.containerd.timeout.shim.load" = "5s"
-  "io.containerd.timeout.shim.shutdown" = "3s"
-  "io.containerd.timeout.task.state" = "2s"
-
-[ttrpc]
-  address = ""
-  gid = 0
-  uid = 0
-
-[root@EQVLWSO2APSIT15-Master1 containerd]# sudo crictl info
-DEBU[0000] Get runtime connection
-DEBU[0000] Using runtime connection timeout: 10s
-FATA[0000] validate service connection: validate CRI v1 runtime API for endpoint "unix:///run/containerd/containerd.sock": rpc error: code = Unimplemented desc = unknown service runtime.v1.RuntimeService
-
-
-# Copyright The containerd Authors.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-[Unit]
-Description=containerd container runtime
-Documentation=https://containerd.io
-After=network.target dbus.service
-
-[Service]
-ExecStartPre=-/sbin/modprobe overlay
-ExecStart=/usr/bin/containerd
-
-Type=notify
-Delegate=yes
-KillMode=process
-Restart=always
-RestartSec=5
-
-# Having non-zero Limit*s causes performance problems due to accounting overhead
-# in the kernel. We recommend using cgroups to do container-local accounting.
-LimitNPROC=infinity
-LimitCORE=infinity
-
-# Comment TasksMax if your systemd version does not supports it.
-# Only systemd 226 and above support this version.
-TasksMax=infinity
-OOMScoreAdjust=-999
-
-[Install]
-WantedBy=multi-user.target
+[root@EQVLWSO2APSIT15-Master1 images]# kubectl describe node eqvlwso2apsit15-master1
+Name:               eqvlwso2apsit15-master1
+Roles:              control-plane
+Labels:             beta.kubernetes.io/arch=amd64
+                    beta.kubernetes.io/os=linux
+                    kubernetes.io/arch=amd64
+                    kubernetes.io/hostname=eqvlwso2apsit15-master1
+                    kubernetes.io/os=linux
+                    node-role.kubernetes.io/control-plane=
+                    node.kubernetes.io/exclude-from-external-load-balancers=
+Annotations:        node.alpha.kubernetes.io/ttl: 0
+                    volumes.kubernetes.io/controller-managed-attach-detach: true
+CreationTimestamp:  Sat, 06 Dec 2025 23:54:50 +0530
+Taints:             node.kubernetes.io/not-ready:NoSchedule
+Unschedulable:      false
+Lease:
+  HolderIdentity:  eqvlwso2apsit15-master1
+  AcquireTime:     <unset>
+  RenewTime:       Sun, 07 Dec 2025 01:36:52 +0530
+Conditions:
+  Type             Status  LastHeartbeatTime                 LastTransitionTime                Reason                       Message
+  ----             ------  -----------------                 ------------------                ------                       -------
+  MemoryPressure   False   Sun, 07 Dec 2025 01:32:39 +0530   Sat, 06 Dec 2025 23:54:49 +0530   KubeletHasSufficientMemory   kubelet has sufficient memory available
+  DiskPressure     False   Sun, 07 Dec 2025 01:32:39 +0530   Sat, 06 Dec 2025 23:54:49 +0530   KubeletHasNoDiskPressure     kubelet has no disk pressure
+  PIDPressure      False   Sun, 07 Dec 2025 01:32:39 +0530   Sat, 06 Dec 2025 23:54:49 +0530   KubeletHasSufficientPID      kubelet has sufficient PID available
+  Ready            False   Sun, 07 Dec 2025 01:32:39 +0530   Sat, 06 Dec 2025 23:54:49 +0530   KubeletNotReady              container runtime network not ready: NetworkReady=false reason:NetworkPluginNotReady message:Network plugin returns error: cni plugin not initialized
+Addresses:
+  InternalIP:  10.57.12.120
+  Hostname:    eqvlwso2apsit15-master1
+Capacity:
+  cpu:                4
+  ephemeral-storage:  81856Mi
+  hugepages-1Gi:      0
+  hugepages-2Mi:      0
+  memory:             15909564Ki
+  pods:               110
+Allocatable:
+  cpu:                4
+  ephemeral-storage:  77249013223
+  hugepages-1Gi:      0
+  hugepages-2Mi:      0
+  memory:             15807164Ki
+  pods:               110
+System Info:
+  Machine ID:                 fe81e954866144f181f4eef820013c28
+  System UUID:                55181e42-1891-e6e3-b6e7-5f5a0c78669b
+  Boot ID:                    4c5d20b5-f8fb-48de-8731-94cfcd5ec999
+  Kernel Version:             5.15.0-314.193.5.4.el9uek.x86_64
+  OS Image:                   Oracle Linux Server 9.6
+  Operating System:           linux
+  Architecture:               amd64
+  Container Runtime Version:  containerd://2.2.0
+  Kubelet Version:            v1.34.2
+  Kube-Proxy Version:
+PodCIDR:                      10.57.16.0/24
+PodCIDRs:                     10.57.16.0/24
+Non-terminated Pods:          (6 in total)
+  Namespace                   Name                                               CPU Requests  CPU Limits  Memory Requests  Memory Limits  Age
+  ---------                   ----                                               ------------  ----------  ---------------  -------------  ---
+  kube-system                 calico-node-wbst5                                  250m (6%)     0 (0%)      0 (0%)           0 (0%)         2m22s
+  kube-system                 etcd-eqvlwso2apsit15-master1                       100m (2%)     0 (0%)      100Mi (0%)       0 (0%)         102m
+  kube-system                 kube-apiserver-eqvlwso2apsit15-master1             250m (6%)     0 (0%)      0 (0%)           0 (0%)         102m
+  kube-system                 kube-controller-manager-eqvlwso2apsit15-master1    200m (5%)     0 (0%)      0 (0%)           0 (0%)         102m
+  kube-system                 kube-proxy-nzlfj                                   0 (0%)        0 (0%)      0 (0%)           0 (0%)         101m
+  kube-system                 kube-scheduler-eqvlwso2apsit15-master1             100m (2%)     0 (0%)      0 (0%)           0 (0%)         102m
+Allocated resources:
+  (Total limits may be over 100 percent, i.e., overcommitted.)
+  Resource           Requests    Limits
+  --------           --------    ------
+  cpu                900m (22%)  0 (0%)
+  memory             100Mi (0%)  0 (0%)
+  ephemeral-storage  0 (0%)      0 (0%)
+  hugepages-1Gi      0 (0%)      0 (0%)
+  hugepages-2Mi      0 (0%)      0 (0%)
+Events:
+  Type     Reason             Age                 From     Message
+  ----     ------             ----                ----     -------
+  Warning  ImageGCFailed      42m                 kubelet  rpc error: code = Unimplemented desc = unknown service runtime.v1.ImageService
+  Warning  ContainerGCFailed  38m (x13 over 50m)  kubelet  rpc error: code = Unimplemented desc = unknown service runtime.v1.RuntimeService
+  Warning  ImageGCFailed      27m (x3 over 37m)   kubelet  rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial unix /var/run/containerd/containerd.sock: connect: no such file or directory"
+  Warning  ContainerGCFailed  25m (x13 over 37m)  kubelet  rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial unix /var/run/containerd/containerd.sock: connect: no such file or directory"
