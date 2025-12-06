@@ -1,0 +1,223 @@
+#sudo yum install yum-utils
+
+
+
+
+
+sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+
+
+
+
+sudo yum install -y yum-utils containerd.io
+
+
+
+
+
+
+# sudo su -
+
+# containerd config default | tee /etc/containerd/config.toml
+
+#vi /etc/containerd/config.toml
+
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+
+SystemdCgroup = false > SystemdCgroup = true
+
+
+
+
+
+
+
+
+[root@EQVLWSO2APPRD12 ~]$ vi /etc/containerd/config.toml
+
+
+[plugins."io.containerd.grpc.v1.cri".registry.configs]
+
+  [plugins."io.containerd.grpc.v1.cri".registry.configs."10.100.23.4:80".tls]
+
+    insecure_skip_verify = false
+
+  [plugins."io.containerd.grpc.v1.cri".registry.config."10.100.23.4:80:.auth]
+
+    auth = ""
+
+
+
+
+# systemctl restart containerd
+
+
+#sudo systemctl enable containerd && sudo systemctl start containerd
+
+
+
+
+
+# sudo systemctl status containerd
+
+
+
+appuser@EQVLWSO2APPRD01 ~]$ sudo sysctl --system
+
+
+
+# sudo cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
+
+overlay
+
+br_netfilter
+
+EOF
+
+
+
+
+
+#sudo modprobe overlay
+
+#sudo modprobe br_netfilter
+
+
+
+
+
+# #sysctl params required by setup, params persist across reboots
+
+# sudo cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+
+net.bridge.bridge-nf-call-iptables  = 1
+
+net.bridge.bridge-nf-call-ip6tables = 1
+
+net.ipv4.ip_forward                 = 1
+
+EOF
+
+
+
+## Apply sysctl params without reboot
+
+ #  sudo sysctl --system
+
+
+
+
+
+#### Verify that the br_netfilter, overlay modules are loaded by running the following commands:
+
+# sudo lsmod | grep br_netfilter
+
+# sudo lsmod | grep overlay
+
+
+
+
+
+####Verify that the net.bridge.bridge-nf-call-iptables, net.bridge.bridge-nf-call-ip6tables, and net.ipv4.ip_forward system variables are set to 1 in your sysctl config by running the following command:
+
+#  sudo sysctl net.bridge.bridge-nf-call-iptables net.bridge.bridge-nf-call-ip6tables net.ipv4.ip_forward
+
+
+
+
+
+2. Install Kubeadm/kubelet/kubectl
+
+# sudo free -h
+
+# sudo swapoff -a
+
+# sudo systemctl disable firewalld; sudo systemctl stop firewalld; sudo systemctl status firewalld
+
+# sudo setenforce 0
+
+# sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+
+
+
+
+
+# sudo cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+
+[kubernetes]
+
+name=Kubernetes
+
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/
+
+enabled=1
+
+gpgcheck=1
+
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/repodata/repomd.xml.key
+
+exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
+
+EOF
+
+
+
+
+
+# sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+
+
+
+
+
+
+
+
+
+# sudo systemctl enable --now kubelet
+
+
+
+
+# sudo systemctl start kubelet
+
+# sudo systemctl status kubelet
+
+
+
+
+
+This command only run master node
+
+# sudo kubeadm init --apiserver-advertise-address=10.50.14.172 --pod-network-cidr=192.168.0.0/32
+
+# mkdir -p $HOME/.kube
+# sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+# sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+
+
+
+
+
+
+# sudo kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+
+# sudo kubectl get nodes
+
+
+
+# sudo kubectl get pods -n kube-system
+
+
+
+#kubeadm token create --print-join-command ( To join the worker nodes to master)
+
+#kubectl label nodes eqvlwso2apsit23 node-role.kubernetes.io/worker=worker10  ( to label the worker nodes)
+
+
+
+No labelsEdit Labels
+User icon: Add a picture of yourself
+Write a comment...

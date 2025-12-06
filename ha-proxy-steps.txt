@@ -1,0 +1,836 @@
+able of Contents 
+
+Architecture Diagram
+Kubernetes Deployment Considerations
+Pre-requisites on all Master + Worker + Haproxy nodes
+Firewall port allow on all master and worker nodes to deploy K8S cluster within firewall on
+Installation Containerd, Kubelet, Kubectl & Kubeadm master and worker nodes
+Installation Haproxy and Keepalived Loadbalancer1 & 2 nodes
+Now join master, worker within load balancer nodes 
+
+
+
+
+Architecture Diagram
+
+               This setup high availability Kubernetes cluster in on-premises server by using HAproxy, Keepalived.
+
+
+
+
+
+
+
+Kubernetes Deployment Considerations
+
+Following are the minimum requirements to set up the Kubernetes Cluster
+
+Master Nodes:                             
+
+Software Details
+
+Operating System
+
+RedHat, Orcale Linux
+
+Software
+
+containerd, kubelet, kubeadm, kubectl
+
+
+
+Hardware Details
+
+Number of VM
+
+3 VM
+
+CPU (Virtual Core)
+
+16 CPU
+
+RAM
+
+16 GB
+
+Storage
+
+120 GB
+
+
+
+Worker Nodes:
+
+                              Software Details
+
+Operating System
+
+RedHat, Oracle Linux
+
+Software
+
+containerd, kubelet, kubeadm, kubectl
+
+
+
+Hardware Details
+
+Number of VM
+
+5 VM
+
+CPU (Virtual Core)
+
+32 CPU
+
+RAM
+
+32 GB
+
+Storage
+
+250 GB
+
+
+
+HAproxy Master & Slave (Same Config):
+
+               Software Details
+
+Operating System
+
+RedHat, Oracle Linux
+
+Software
+
+HAproxy & Keepalived
+
+
+
+               Hardware Details
+
+Number of VM
+
+2 VM
+
+CPU (Virtual Core)
+
+8 CPU
+
+RAM
+
+16 GB
+
+Storage
+
+60 GB
+
+Pre-requisites on all Master + Worker + Haproxy nodes
+
+1.Set time sync on VM’s and check time zone if in IST.
+
+2.Make entry in /etc/hosts files of all the VM’s required to configure a cluster.
+
+a. Syntax: vi /etc/hosts
+
+
+
+
+
+3. Set the hosts name in all the VM’s.
+
+a. Syntax: hostnamectl set-hostname master1
+
+
+
+
+
+4. Disable SELINUX on the VM’s, by default it is set to “permissive”, u need to set it to “disabled”.
+
+a. Syntax: vi /etc/selinux/config
+
+
+
+                                
+
+5. Disable swapoff, u need to comment out the /dev/mapper/rhel-swap line, Save & Exit.
+
+a. Syntax: vi /etc/fstab
+
+
+
+
+
+b. Syntax: mount -a
+
+
+
+     
+
+c. Syntax: swapoff -a
+
+
+
+
+
+6. Make changes in iptables & enable IP forwarding.
+
+a.Syntax:
+
+cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
+
+overlay
+
+br_netfilter
+
+EOF
+
+
+
+modprobe overlay
+
+modprobe br_netfilter
+
+
+
+
+
+ sudo cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+
+net.bridge.bridge-nf-call-iptables  = 1
+
+net.bridge.bridge-nf-call-ip6tables = 1
+
+net.ipv4.ip_forward                 = 1
+
+EOF
+
+
+
+     
+
+sysctl –system
+
+
+
+     
+
+lsmod | grep br_netfilter
+
+lsmod | grep overlay
+
+
+
+                                       
+
+sysctl net.bridge.bridge-nf-call-iptables net.bridge.bridge-nf-call-ip6tables net.ipv4.ip_forward
+
+                                         
+
+
+
+7. Disable firewall.
+
+Syntax: systemctl disable firewalld; systemctl stop firewalld; systemctl status firewalld
+
+
+
+         
+
+Although, disabling firewall is not the best practice, firewall must be enabled but in our case is firewall is enabled the “kube-apiserver & etcd-server” won’t be able to make connection across nodes. We need to test K8S cluster with firewall on later.
+
+These pre-requisites are must on K8S VM’s and Containerd server. For best practices, after performing pre-requisites, take a snapshot of VM’s. So that if any configuration error occurs u can revert at this stage.
+
+8. Verify the swap should come 0 values.
+
+a. Syntax: free -h
+
+
+
+
+
+9. Setenforce values : 0
+
+a. Syntax: setenforce 0
+
+
+
+   
+
+Firewall port allow on all master and worker nodes to deploy K8S cluster within firewall on
+
+# firewall-cmd--add-masquerade --permanent
+
+# firewall-cmd --add-service=kube-apiserver --permanent
+
+# firewall-cmd –add-service=etcd-client –permanent
+
+# firewall-cmd –add-service=etcd-server --permanent
+
+# firewall-cmd--add-port=10250/tcp--permanent
+
+# firewall-cmd--add-port=10251/tcp--permanent
+
+# firewall-cmd--add-port=10252/tcp--permanent
+
+# firewall-cmd--add-port=10255/tcp--permanent
+
+# firewall-cmd--add-port=8472/tcp--permanent
+
+# firewall-cmd--add-port=6443/tcp--permanent
+
+# firewall-cmd --add-port=2379-2380/tcp--permanent
+
+# firewall-cmd--add-port=30000-32767/tcp--permanent
+
+# firewall-cmd --add-port=8080/tcp --permanent
+
+# firewalld-cmd –reload
+
+
+
+Master Node Ports:
+
+
+
+           
+
+Worker Node Ports:
+
+
+
+
+
+Installation Containerd, Kubelet, Kubectl & Kubeadm master and worker nodes
+
+1.installation Containerd
+
+Syntax: yum install yum-utils 
+
+
+
+
+
+Syntax: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+
+
+
+
+Syntax: yum install -y yum-utils containerd.io
+
+
+
+
+
+Syntax: containerd config default | tee /etc/containerd/config.toml
+
+
+
+
+
+
+
+Syntax: vi /etc/containerd/config.toml
+
+                        :set nu  à the number
+
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+
+125 Line number: SystemdCgroup = false > SystemdCgroup = true
+
+
+
+
+
+If  using private registry need to configure this place
+
+Syntax: vi /etc/containerd/config.toml
+
+                                   [plugins."io.containerd.grpc.v1.cri".registry.configs] à 149 Line
+
+           [plugins."io.containerd.grpc.v1.cri".registry.configs."10.100.23.4:80".tls]
+
+    insecure_skip_verify = true
+
+           [plugins."io.containerd.grpc.v1.cri".registry.configs."10.100.23.4:80”.auth]
+
+                 username = "admin"
+
+                 password = "Harbor12345
+
+
+
+                     
+
+Syntax: systemctl daemon-reload
+
+
+
+                     
+
+Syntax: systemctl enable containerd && sudo systemctl start containerd
+
+
+
+                                        
+
+Syntax: systemctl status containerd
+
+
+
+                                        
+
+2. Installation of kubectl, kublet, kubeadm
+
+Syntax: cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+
+[kubernetes]
+
+name=Kubernetes
+
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/
+
+enabled=1
+
+gpgcheck=1
+
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/repodata/repomd.xml.key
+
+exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
+
+EOF
+
+
+
+
+
+Syntax: yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+
+
+
+                      
+
+Syntax: systemctl enable --now kubelet
+
+
+
+      
+
+Syntax: systemctl start kubelet
+
+
+
+     
+
+Syntax: systemctl status kubelet
+
+
+
+     
+
+Syntax: kubectl version, kubelet --version, kubeadm version
+
+
+
+     
+
+Installation Haproxy and Keepalived Loadbalancer1 & 2 nodes
+
+Installation Keepalived:
+Syntax: yum install -y keepalived
+
+
+
+   
+
+Syntax: ip a
+
+
+
+   
+
+Syntax: rm -rf /etc/keepalived/keepalived.conf
+
+
+
+   
+
+Syntax: vi /etc/keepalived/keepalived.conf  à (LB1)
+
+
+
+   
+
+ ! Configuration File for keepalived
+
+  global_defs {
+
+  notification_email {
+
+  }
+
+  router_id LVS_DEVEL
+
+  vrrp_skip_check_adv_addr
+
+  vrrp_garp_interval 0
+
+  vrrp_gna_interval 0
+
+}
+
+vrrp_script chk_haproxy {
+
+  script "killall -0 haproxy"
+
+  interval 2
+
+  weight 2
+
+}
+
+vrrp_instance haproxy-vip {
+
+  state MASTER
+
+  priority 100
+
+  interface ens192                       # Network card
+
+  virtual_router_id 60
+
+  advert_int 1
+
+  authentication {
+
+    auth_type PASS
+
+    auth_pass 1111
+
+  }
+
+  unicast_src_ip 192.XX.XX.XX          # The IP address of this machine
+
+  unicast_peer {
+
+    192.XX.XX.XX                        # The IP address of peer machines
+
+  }
+
+  virtual_ipaddress {
+
+    192.XX.XX.XX /24                  # The VIP address
+
+  }
+
+  track_script {
+
+    chk_haproxy
+
+  }
+
+}
+
+Load Balance 1
+
+
+
+
+
+Syntax: systemctl enable keepalived
+
+
+
+               
+
+Syntax: systemctl restart keepalived
+
+
+
+               
+
+Syntax: systemctl status keepalived
+
+
+
+                
+
+Syntax: ip a  (Verify the ip address)
+
+
+
+                
+
+Load Balance 2
+
+
+
+! Configuration File for keepalived
+
+  global_defs {
+
+  notification_email {
+
+  }
+
+  router_id LVS_DEVEL
+
+  vrrp_skip_check_adv_addr
+
+  vrrp_garp_interval 0
+
+  vrrp_gna_interval 0
+
+}
+
+vrrp_script chk_haproxy {
+
+  script "killall -0 haproxy"
+
+  interval 2
+
+  weight 2
+
+}
+
+vrrp_instance haproxy-vip {
+
+  state BACKUP
+
+  priority 100
+
+  interface ens192                       # Network card
+
+  virtual_router_id 60
+
+  advert_int 1
+
+  authentication {
+
+    auth_type PASS
+
+    auth_pass 1111
+
+  }
+
+  unicast_src_ip 192.168.99.160      # The IP address of this machine
+
+  unicast_peer {
+
+    192.168.99.161                         # The IP address of peer machines
+
+  }
+
+  virtual_ipaddress {
+
+    192.168.99.164/24                  # The VIP address
+
+  }
+
+  track_script {
+
+    chk_haproxy
+
+  }
+
+}
+
+
+
+Syntax: systemctl enable keepalived 
+
+Syntax: systemctl restart keepalived
+
+Syntax: systemctl status keepalived
+
+
+
+
+
+                      
+
+2.Installation HAproxy
+
+Syntax: yum install -y haproxy
+
+
+
+    
+
+Syntax: vi /etc/haproxy/haproxy.cfg
+
+
+
+                              
+
+frontend kubernetes
+
+bind *:6443
+
+option tcplog
+
+mode tcp
+
+default_backend kubernetes-master-nodes
+
+
+
+backend kubernetes-master-nodes
+
+mode tcp
+
+balance roundrobin
+
+option tcp-check
+
+default-server inter 10s downinter 5s rise 2 fall 2 slowstart 60s maxconn 250 maxqueue 256 weight 100d
+
+server master1 192.XX.XX.XX:6443
+
+server master2 192.XX.XX.XX:6443
+
+
+
+Syntax: systemctl enable haproxy
+
+
+
+                             
+
+Syntax: systemctl start haproxy or systemctl restart haproxy
+
+
+
+
+
+Syntax: systemctl status haproxy
+
+
+
+                            
+
+ Now join master, worker within load balancer nodes
+
+Below the syntax need to run in master1 node server control plane endpoint mentioned load balancer virtual IP address within 6443, API server advertise address mentioned master1 IP address.
+
+Syntax: kubeadm init --control-plane-endpoint="192.168.99.164:6443" --upload-certs --apiserver-advertise-address=192.168.99.158 --pod-network-cidr=10.20.0.0/24
+
+
+
+
+
+
+
+Below the syntax master2 node server to join command. This Join command print in master1 node.
+
+            Syntax: kubeadm join 192.168.99.164:6443 --token jrht8n.nejzzlan6qaiyesg \
+
+        --discovery-token-ca-cert-hash sha256:80f6b5b33e56d193b80b5a413148e8e054d6b6cfc6867c956b7bebbc258c6b27 \
+
+        --control-plane --certificate-key 514d1cf5f873eda4b467c378ecf32489a0829ca5d528f915509c2a80a8900a11 --apiserver-advertise-address=192.168.99.159
+
+
+
+
+
+Alternatively, if you are the root user, you can run:
+
+ Syntax: export KUBECONFIG=/etc/kubernetes/admin.conf
+
+
+
+
+
+Syntax: kubectl get nodes
+
+
+
+
+
+If you are login normal user follow the steps
+
+            mkdir -p $HOME/.kube
+
+            sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+
+            sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+
+
+Deploy calico master1.
+
+Syntax: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+
+
+
+
+
+Syntax: kubectl get nodes
+
+
+
+
+
+Kublet status in master nodes
+
+Syntax: systemctl status kubelet
+
+
+
+
+
+
+
+Join in Worker nodes.
+
+Below the syntax worker1 node server to join command. This Join command print in master1 node.
+
+Syntax: kubeadm join 192.168.99.164:6443 --token jrht8n.nejzzlan6qaiyesg \
+
+        --discovery-token-ca-cert-hash sha256:80f6b5b33e56d193b80b5a413148e8e054d6b6cfc6867c956b7bebbc258c6b27
+
+
+
+
+
+Syntax: systemctl status kubelet
+
+
+
+
+
+Below the syntax worker2 node server to join command. This Join command print in master1 node.
+
+            Syntax: kubeadm join 192.168.99.164:6443 --token jrht8n.nejzzlan6qaiyesg \
+
+        --discovery-token-ca-cert-hash sha256:80f6b5b33e56d193b80b5a413148e8e054d6b6cfc6867c956b7bebbc258c6b27
+
+
+
+
+
+Syntax: systemctl status kubelet
+
+
+
+
+
+Verify the node Join in master.
+
+Syntax: kubectl get nodes -o wide
+
+
+
+
+
+Verify the kube-system service running.
+
+Syntax: kubectl get pods -n kube-system -o wide
+
+
+
+
+
+
+

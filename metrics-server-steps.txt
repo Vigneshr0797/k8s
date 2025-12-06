@@ -1,0 +1,144 @@
+Installation for metrics-server steps
+
+[appuser@K8S-Master ~]$ kubectl get nodes
+
+[appuser@K8S-Master ~]$ kubectl get pod -n kube-system
+
+
+
+
+
+Create folder for deployment yaml files.
+
+/home/appuser/deployment.yaml
+
+
+
+
+
+[appuser@K8S-Master deployment.yaml]$ wget https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+
+
+
+
+[appuser@K8S-Master deployment.yaml]$ vi components.yaml
+
+
+
+
+
+[appuser@K8S-Master deployment.yaml]$ kubectl apply -f components.yaml
+
+
+
+
+
+Verify the metrics server running status in kube-system
+
+[appuser@K8S-Master ~]$ kubectl get pod -n kube-system
+
+
+
+
+
+[appuser@K8S-Master deployment.yaml]$ kubectl describe pods/metrics-server-d8bd74976-sgpfz -n kube-system
+
+
+
+
+
+[appuser@K8S-Master deployment.yaml]$ kubectl get hpa ns
+
+
+
+
+
+Deploy HAP by using yaml files.
+
+We create namespace in Kubernetes.
+
+[appuser@K8S-Master deployment.yaml]$ kubectl create ns hpa-test
+
+
+
+
+
+[appuser@K8S-Master deployment.yaml]$ kubectl get ns
+
+
+
+
+
+Create a deployment for HPA testing yaml files stored below the path run executed kubectl
+
+[appuser@K8S-Master deployment.yaml]$ vi example-app.yaml
+
+
+
+
+
+[appuser@K8S-Master deployment.yaml]$ kubectl apply -f example-app.yaml
+
+
+
+
+
+[appuser@K8S-Master deployment.yaml]$ vi example-svc-app.yaml
+
+
+
+
+
+[appuser@K8S-Master deployment.yaml]$ kubectl apply -f example-svc-app.yaml
+
+
+
+
+
+[appuser@K8S-Master deployment.yaml]$ kubectl get deploy -n hpa-test
+
+
+
+
+
+[appuser@K8S-Master deployment.yaml]$ vi example-hpa.yaml
+
+
+
+
+
+[appuser@K8S-Master deployment.yaml]$ kubectl apply -f example-hpa.yaml
+
+
+
+
+
+[appuser@K8S-Master deployment.yaml]$ kubectl -n hpa-test autoscale deployment php-apache --cpu-percent=50 --min=1 --max=5
+
+
+
+
+
+[appuser@K8S-Master deployment.yaml]$ kubectl -n hpa-test get hpa
+
+
+
+
+
+[appuser@K8S-Master deployment.yaml]$ kubectl -n hpa-test get hpa php-apache -o yaml
+
+
+
+
+
+[appuser@K8S-Master deployment.yaml]$ kubectl -n hpa-test run -i --tty load-generator --rm --image=busybox --restart=Never -- /bin/sh -c "while sleep 0.01; do wget -q -O- http://php-apache; done"
+
+
+
+Output
+
+
+
+
+
