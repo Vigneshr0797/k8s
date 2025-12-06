@@ -1,48 +1,29 @@
-[root@EQVLWSO2APSIT15-Master1 containerd]# containerd --version
-containerd containerd.io v2.2.0 1c4457e00facac03ce1d75f7b6777a7a851e5c41
-[root@EQVLWSO2APSIT15-Master1 containerd]# containerd config dump | grep cri -n
-WARN[0000] Ignoring unknown key in TOML                  column=1 error="strict mode: fields in the document are missing in the target struct" file=/etc/containerd/config.toml key=plugin_dir row=4
-WARN[0000] Ignoring unknown key in TOML for plugin       error="strict mode: fields in the document are missing in the target struct" key=disable_cgroup plugin=io.containerd.cri.v1.runtime
-WARN[0000] Ignoring unknown key in TOML for plugin       error="strict mode: fields in the document are missing in the target struct" key=systemd_cgroup plugin=io.containerd.cri.v1.runtime
-WARN[0000] Ignoring unknown key in TOML for plugin       error="strict mode: fields in the document are missing in the target struct" key="containerd no_pivot" plugin=io.containerd.cri.v1.runtime
-WARN[0000] Ignoring unknown key in TOML for plugin       error="strict mode: fields in the document are missing in the target struct" key="containerd default_runtime" plugin=io.containerd.cri.v1.runtime
-WARN[0000] Ignoring unknown key in TOML for plugin       error="strict mode: fields in the document are missing in the target struct" key="containerd default_runtime options" plugin=io.containerd.cri.v1.runtime
-WARN[0000] Ignoring unknown key in TOML for plugin       error="strict mode: fields in the document are missing in the target struct" key="containerd runtimes runc runtime_engine" plugin=io.containerd.cri.v1.runtime
-WARN[0000] Ignoring unknown key in TOML for plugin       error="strict mode: fields in the document are missing in the target struct" key="containerd runtimes runc runtime_root" plugin=io.containerd.cri.v1.runtime
-WARN[0000] Ignoring unknown key in TOML for plugin       error="strict mode: fields in the document are missing in the target struct" key="containerd untrusted_workload_runtime" plugin=io.containerd.cri.v1.runtime
-WARN[0000] Ignoring unknown key in TOML for plugin       error="strict mode: fields in the document are missing in the target struct" key="containerd untrusted_workload_runtime options" plugin=io.containerd.cri.v1.runtime
-39:  [plugins.'io.containerd.cri.v1.images']
-50:    [plugins.'io.containerd.cri.v1.images'.pinned_images]
-53:    [plugins.'io.containerd.cri.v1.images'.registry]
-56:      [plugins.'io.containerd.cri.v1.images'.registry.mirrors]
-57:        [plugins.'io.containerd.cri.v1.images'.registry.mirrors.'harbour.equitasbank.com']
-60:      [plugins.'io.containerd.cri.v1.images'.registry.configs]
-61:        [plugins.'io.containerd.cri.v1.images'.registry.configs.'harbour.equitasbank.com']
-62:          [plugins.'io.containerd.cri.v1.images'.registry.configs.'harbour.equitasbank.com'.auth]
-68:    [plugins.'io.containerd.cri.v1.images'.image_decryption]
-71:  [plugins.'io.containerd.cri.v1.runtime']
-91:    [plugins.'io.containerd.cri.v1.runtime'.containerd]
-96:      [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes]
-97:        [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runc]
-112:          [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runc.options]
-125:    [plugins.'io.containerd.cri.v1.runtime'.cni]
-146:  [plugins.'io.containerd.grpc.v1.cri']
-153:    [plugins.'io.containerd.grpc.v1.cri'.x509_key_pair_streaming]
-275:  'io.containerd.timeout.cri.defercleanup' = '1m0s'
-
-
-
-4ca55e3998a33ad733f4c5c044ee72714c5.scope/hugetlb.2MB.events\""
-Dec 07 00:20:54 EQVLWSO2APSIT15-Master1 containerd[1919062]: time="2025-12-07T00:20:54.355989453+05:30" level=error msg="unable to parse \"max 0\" as a uint from Cgroup file \"/sys/fs/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod39c8c0017bde946e202049d88a890008.slice/cri-containerd-53b2c117e5eacc3f62070820cb6de4ca55e3998a33ad733f4c5c044ee72714c5.scope/hugetlb.1GB.events\""
-Dec 07 00:20:54 EQVLWSO2APSIT15-Master1 containerd[1919062]: time="2025-12-07T00:20:54.356632748+05:30" level=error msg="unable to parse \"max 0\" as a uint from Cgroup file \"/sys/fs/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod3ec55fbf42b88ba35cee53ef12f23336.slice/cri-containerd-a9a7974658022917ba508a78dcf27b1146bd3cd3ce3cd77f84d9e00a9879448f.scope/hugetlb.2MB.events\""
-Dec 07 00:20:54 EQVLWSO2APSIT15-Master1 containerd[1919062]: time="2025-12-07T00:20:54.356732577+05:30" level=error msg="unable to parse \"max 0\" as a uint from Cgroup file \"/sys/fs/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod3ec55fbf42b88ba35cee53ef12f23336.slice/cri-containerd-a9a7974658022917ba508a78dcf27b1146bd3cd3ce3cd77f84d9e00a9879448f.scope/hugetlb.1GB.events\""
-Dec 07 00:20:54 EQVLWSO2APSIT15-Master1 containerd[1919062]: time="2025-12-07T00:20:54.357297696+05:30" level=error msg="unable to parse \"max 0\" as a uint from Cgroup file \"/sys/fs/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod5158e4363fa3fe01706816a9b3e46c03.slice/cri-containerd-3b0e94bcdf821991ab447948ccb04934b05fbca07f1528b22801539a8f7f13f5.scope/hugetlb.2MB.events\""
-Dec 07 00:20:54 EQVLWSO2APSIT15-Master1 containerd[1919062]: time="2025-12-07T00:20:54.357408105+05:30" level=error msg="unable to parse \"max 0\" as a uint from Cgroup file \"/sys/fs/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod5158e4363fa3fe01706816a9b3e46c03.slice/cri-containerd-3b0e94bcdf821991ab447948ccb04934b05fbca07f1528b22801539a8f7f13f5.scope/hugetlb.1GB.events\""
-Dec 07 00:20:54 EQVLWSO2APSIT15-Master1 containerd[1919062]: time="2025-12-07T00:20:54.357966113+05:30" level=error msg="unable to parse \"max 0\" as a uint from Cgroup file \"/sys/fs/cgroup/kubepods.slice/kubepods-besteffort.slice/kubepods-besteffort-pod72931f78_9d64_48ac_82b2_b502b407e813.slice/cri-containerd-30d13ce71434a3734210441f824736fe3fb55ebd80eadefa2e5bfd1fa04f807b.scope/hugetlb.2MB.events\""
-Dec 07 00:20:54 EQVLWSO2APSIT15-Master1 containerd[1919062]: time="2025-12-07T00:20:54.358040057+05:30" level=error msg="unable to parse \"max 0\" as a uint from Cgroup file \"/sys/fs/cgroup/kubepods.slice/kubepods-besteffort.slice/kubepods-besteffort-pod72931f78_9d64_48ac_82b2_b502b407e813.slice/cri-containerd-30d13ce71434a3734210441f824736fe3fb55ebd80eadefa2e5bfd1fa04f807b.scope/hugetlb.1GB.events\""
-Dec 07 00:20:54 EQVLWSO2APSIT15-Master1 containerd[1919062]: time="2025-12-07T00:20:54.358630393+05:30" level=error msg="unable to parse \"max 0\" as a uint from Cgroup file \"/sys/fs/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod5fc0044fd7ae759f45f5b2458226c029.slice/cri-containerd-2e49d6ad29dbdd98f7e5bf4724b16e0a749c2ac454ac16a190a6b6cac27df1ec.scope/hugetlb.2MB.events\""
-Dec 07 00:20:54 EQVLWSO2APSIT15-Master1 containerd[1919062]: time="2025-12-07T00:20:54.358716753+05:30" level=error msg="unable to parse \"max 0\" as a uint from Cgroup file \"/sys/fs/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod5fc0044fd7ae759f45f5b2458226c029.slice/cri-containerd-2e49d6ad29dbdd98f7e5bf4724b16e0a749c2ac454ac16a190a6b6cac27df1ec.scope/hugetlb.1GB.events\""
-Dec 07 00:21:04 EQVLWSO2APSIT15-Master1 containerd[1919062]: time="2025-12-07T00:21:04.367868644+05:30" level=error msg="unable to parse \"max 0\" as a uint from Cgroup file \"/sys/fs/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod5fc0044fd7ae759f45f5b2458226c029.slice/cri-containerd-2e49d6ad29dbdd98f7e5bf4724b16e0a749c2ac454ac16a190a6b6cac27df1ec.scope/hugetlb.2MB.events\""
-Dec 07 00:21:04 EQVLWSO2APSIT15-Master1 containerd[1919062]: time="2025-12-07T00:21:04.367952274+05:30" level=error msg="unable to parse \"max 0\" as a uint from Cgroup file \"/sys/fs/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod5fc0044fd7ae759f45f5b2458226c029.slice/cri-containerd-2e49d6ad29dbdd98f7e5bf4724b16e0a749c2ac454ac16a190a6b6cac27df1ec.scope/hugetlb.1GB.events\""
-Dec 07 00:21:04 EQVLWSO2APSIT15-Master1 containerd[1919062]: time="2025-12-07T00:21:04.368524513+05:30" level=error msg="unable to parse \"max 0\" as a uint from Cgroup file \"/sys/fs/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod39c8c0017bde946e202049d88a890008.slice/cri-containerd-53b2c117e5eacc3f62070820cb6de4ca55e3998a33ad733f4c5c044ee72714c5.scope/hugetlb.2MB.events\""
-Dec 07 00:21:04 EQVLWSO2APSIT15-Master1 containerd[1919062]: time="2025-12-07T00:21:04.368598510+05:30" level=error msg="unable to parse \"max 0\" as a uint from Cgroup file \"/sys/fs/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod39c8c0017bde946e202049d88a890008.slice/cri-containe^C
+registry.k8s.io/kube-apiserver:v1.34.2                                                                  application/vnd.docker.distribution.manifest.list.v2+json sha256:e009ef63deaf797763b5bd423d04a099a2fe414a081bf7d216b43bc9e76b9077 25.8 MiB  linux/amd64,linux/arm64,linux/ppc64le,linux/s390x                            io.cri-containerd.image=managed
+registry.k8s.io/kube-controller-manager:v1.34.2                                                         application/vnd.docker.distribution.manifest.list.v2+json sha256:5c3998664b77441c09a4604f1361b230e63f7a6f299fc02fc1ebd1a12c38e3eb 21.8 MiB  linux/amd64,linux/arm64,linux/ppc64le,linux/s390x                            io.cri-containerd.image=managed
+registry.k8s.io/kube-proxy:v1.34.2                                                                      application/vnd.docker.distribution.manifest.list.v2+json sha256:d8b843ac8a5e861238df24a4db8c2ddced89948633400c4660464472045276f5 24.8 MiB  linux/amd64,linux/arm64,linux/ppc64le,linux/s390x                            io.cri-containerd.image=managed
+registry.k8s.io/kube-scheduler:v1.34.2                                                                  application/vnd.docker.distribution.manifest.list.v2+json sha256:44229946c0966b07d5c0791681d803e77258949985e49b4ab0fbdff99d2a48c6 16.6 MiB  linux/amd64,linux/arm64,linux/ppc64le,linux/s390x                            io.cri-containerd.image=managed
+[root@EQVLWSO2APSIT15-Master1 containerd]# sudo ctr -n k8s.io images tag registry.k8s.io/kube-apiserver:v1.34.2 harbour.equitasbank.com/kubernetes-v1.34.2/kube-apiserver:v1.34.2
+harbour.equitasbank.com/kubernetes-v1.34.2/kube-apiserver:v1.34.2
+[root@EQVLWSO2APSIT15-Master1 containerd]# ^C
+[root@EQVLWSO2APSIT15-Master1 containerd]# sudo ctr -n k8s.io images  push --user admin:Harbor12345 harbour.equitasbank.com/kubernetes-v1.34.2/kube-apiserver:v1.34.2
+harbour.equitasbank.com/kubernetes v1.34        pushing content
+└──index v1.34.2@sha256:e009ef63deaf7977        waiting         |--------------------------------------|
+   ├──manifest (e1e4a34f7968)                   waiting         |--------------------------------------|
+   ├──manifest (f0e0dc00029a)                   waiting         |--------------------------------------|
+   ├──manifest (8002b35fedba)                   waiting         |--------------------------------------|
+   └──manifest (9a94f333d6fe)                   waiting         |--------------------------------------|
+application/vnd.docker.distribution.manifest.list.v2+json sha256:e009ef63deaf797763b5bd423d04a099a2fe414a081bf7d216b43bc9e76b9077
+Pushing to OCI Registry (harbour.equitasbank.com/kubernetes-v1.34.2/kube-apiserver:v1.34.2)     elapsed: 0.0 s  total:   0.0 B  (0.0 B/s)
+ctr: content digest sha256:e1e4a34f796818b3c064ab8642c26e073da71af04504acb00241c34412f633fa: not found
+[root@EQVLWSO2APSIT15-Master1 containerd]# exit
+logout
+[appuser@EQVLWSO2APSIT15-Master1 script-files]$ sudo ctr -n k8s.io images  push --user admin:Harbor12345 harbour.equitasbank.com/kubernetes-v1.34.2/kube-apiserver:v1.34.2
+harbour.equitasbank.com/kubernetes v1.34        pushing content
+└──index v1.34.2@sha256:e009ef63deaf7977        waiting         |--------------------------------------|
+   ├──manifest (e1e4a34f7968)                   waiting         |--------------------------------------|
+   ├──manifest (8002b35fedba)                   waiting         |--------------------------------------|
+   ├──manifest (f0e0dc00029a)                   waiting         |--------------------------------------|
+   └──manifest (9a94f333d6fe)                   waiting         |--------------------------------------|
+application/vnd.docker.distribution.manifest.list.v2+json sha256:e009ef63deaf797763b5bd423d04a099a2fe414a081bf7d216b43bc9e76b9077
+Pushing to OCI Registry (harbour.equitasbank.com/kubernetes-v1.34.2/kube-apiserver:v1.34.2)     elapsed: 0.0 s  total:   0.0 B  (0.0 B/s)
+ctr: content digest sha256:e1e4a34f796818b3c064ab8642c26e073da71af04504acb00241c34412f633fa: not found
