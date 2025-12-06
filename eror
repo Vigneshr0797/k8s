@@ -1,12 +1,160 @@
-[appuser@EQVLWSO2APSIT15 ~]$ sudo kubeadm init --apiserver-advertise-address=10.50.12.120 --pod-network-cidr=10.57.16.0/23
-[init] Using Kubernetes version: v1.34.2
-[preflight] Running pre-flight checks
-W1206 22:39:24.356012 1877180 checks.go:1046] [preflight] WARNING: Couldn't create the interface used for talking to the container runtime: failed to create new CRI runtime service: validate service connection: validate CRI v1 runtime API for endpoint "unix:///var/run/containerd/containerd.sock": rpc error: code = Unimplemented desc = unknown service runtime.v1.RuntimeService
-[preflight] Some fatal errors occurred:
-        [ERROR Port-6443]: Port 6443 is in use
-[preflight] If you know what you are doing, you can make a check non-fatal with `--ignore-preflight-errors=...`
-error: error execution phase preflight: preflight checks failed
-To see the stack trace of this error execute with --v=5 or higher
-[appuser@EQVLWSO2APSIT15 ~]$ sudo ps -ef | grep 6443
-root       50552   50297 10 Nov27 ?        23:42:10 kube-apiserver --advertise-address=10.57.12.120 --allow-privileged=true --authorization-mode=Node,RBAC --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-issuer=https://kubernetes.default.svc.cluster.local --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-account-signing-key-file=/etc/kubernetes/pki/sa.key --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key --tls-min-version=VersionTLS12 --tls-cipher-suites=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
-appuser  1877267 1844264  0 22:39 pts/0    00:00:00 grep --color=auto 6443
+You are trying to re-run `kubeadm init`, but **your old Kubernetes cluster is still running**, including the **old kube-apiserver on port 6443**, and your **old containerd socket is still present or partially broken**.
+
+Let’s fix this cleanly and completely.
+
+---
+
+# ✅ **Step 1: Fully Reset Old Kubernetes Cluster**
+
+Before reinstalling Kubernetes, you **must wipe the previous cluster**.
+
+Run:
+
+```bash
+sudo kubeadm reset --force
+```
+
+Then clean iptables + CNI:
+
+```bash
+sudo systemctl stop kubelet
+sudo systemctl stop containerd
+
+sudo iptables -F && sudo iptables -t nat -F && sudo iptables -t mangle -F && sudo iptables -X
+sudo ipvsadm --clear
+
+sudo rm -rf /etc/cni/net.d
+sudo rm -rf /var/lib/cni/
+```
+
+---
+
+# ✅ **Step 2: Stop & Disable Kubelet**
+
+The old kube-apiserver is running because kubelet is still active.
+
+```bash
+sudo systemctl stop kubelet
+sudo systemctl disable kubelet
+```
+
+Verify kube-apiserver dies:
+
+```bash
+ps -ef | grep kube-apiserver
+```
+
+If still running, kill it:
+
+```bash
+sudo kill -9 $(pgrep kube-apiserver)
+```
+
+---
+
+# ✅ **Step 3: Completely Remove Containerd (including leftover mounts)**
+
+### 1. **Stop containerd**
+
+```bash
+sudo systemctl stop containerd
+sudo systemctl disable containerd
+```
+
+### 2. **Unmount all containerd mounts**
+
+Containerd creates overlay and tmpfs mounts that block deletion.
+
+Unmount all containerd-related mounts:
+
+```bash
+mount | grep containerd
+```
+
+Then unmount each:
+
+```bash
+sudo umount -l /run/containerd/*
+sudo umount -l /var/lib/containerd/*
+```
+
+Or run mass unmount safely:
+
+```bash
+sudo for i in $(mount | grep containerd | awk '{print $3}'); do umount -l $i; done
+```
+
+### 3. **Remove containerd binaries**
+
+```bash
+sudo rm -rf /usr/bin/containerd /usr/bin/containerd-shim* /usr/bin/ctr
+```
+
+### 4. **Remove containerd directories**
+
+```bash
+sudo rm -rf /etc/containerd
+sudo rm -rf /var/lib/containerd
+sudo rm -rf /run/containerd
+```
+
+---
+
+# ✅ **Step 4: Remove Old Kubernetes Data**
+
+These leftover directories make kubeadm think an old cluster exists.
+
+```bash
+sudo rm -rf /etc/kubernetes
+sudo rm -rf /var/lib/kubelet
+sudo rm -rf /var/lib/etcd
+sudo rm -rf /etc/kubernetes/manifests
+```
+
+---
+
+# 🔍 **Step 5: Verify Port 6443 is Free**
+
+Run:
+
+```bash
+sudo lsof -i :6443
+```
+
+If anything still shows, kill it:
+
+```bash
+sudo kill -9 <PID>
+```
+
+---
+
+# ⭐ **Now Reinstall Containerd Fresh**
+
+If you want containerd back:
+
+```bash
+sudo yum remove containerd.io -y
+sudo yum install containerd.io -y
+```
+
+Generate config:
+
+```bash
+sudo containerd config default | sudo tee /etc/containerd/config.toml
+sudo systemctl restart containerd
+```
+
+---
+
+# ⭐ **Now Retry kubeadm init**
+
+Once port 6443 is free and containerd is clean:
+
+```bash
+sudo kubeadm init --apiserver-advertise-address=10.50.12.120 --pod-network-cidr=10.57.16.0/23
+```
+
+---
+
+# 📌 If you want, I can give you a **single combined cleanup script** that removes EVERYTHING in one go.
