@@ -1,0 +1,38 @@
+For downloading the required kubernetes images to update the kubernetes to the latest stable version
+
+Kubernetes v1.34.0 – Core Images
+registry.k8s.io/kube-apiserver:v1.34.0
+registry.k8s.io/kube-controller-manager:v1.34.0
+registry.k8s.io/kube-scheduler:v1.34.0
+registry.k8s.io/kube-proxy:v1.34.0
+registry.k8s.io/etcd:3.6.4-0
+registry.k8s.io/pause:3.10.1
+registry.k8s.io/coredns/coredns:v1.12.1
+
+Calico (CNI + Controllers + Node)
+docker.io/calico/cni:v3.27.2
+docker.io/calico/node:v3.27.2
+docker.io/calico/kube-controllers:v3.27.2
+docker.io/calico/pod2daemon-flexvol:v3.27.2
+
+ArgoCD
+ghcr.io/argoproj/argo-cd:v2.11.1
+quay.io/argoproj/argocd:latest
+ghcr.io/dexidp/dex:v2.43.0
+public.ecr.aws/docker/library/redis:8.2.3-alpine 
+
+Prometheus Stack
+docker.io/prom/prometheus:v2.54.1
+docker.io/prom/node-exporter:v1.7.0
+docker.io/prom/alertmanager:v0.27.0
+
+Grafana
+docker.io/grafana/grafana:10.4.2
+
+Loki Log Stack
+docker.io/grafana/loki:3.0.0
+docker.io/grafana/promtail:3.0.0
+docker.io/grafana/loki-canary:3.0.0
+
+Prisma Defender
+registry-auth.twistlock.com/tw_n1eb7qn5sewx4pwewlvaafu0cvrdzdfu/twistlock/defender:defender_34_03_138
