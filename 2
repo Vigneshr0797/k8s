@@ -1,107 +1,352 @@
-Ah! The problem is that even though `yum` shows that `kubeadm`, `kubectl`, and `kubelet` are installed, your shell **cannot find the `kubeadm` binary**. This usually happens because the binaries are installed in a directory that is **not in your `$PATH`**, or the installation was partially removed.
-
-Let's troubleshoot step by step:
-
----
-
-### **1. Check if binaries exist**
-
-Run:
-
-```bash
-sudo find / -name kubeadm -type f
-sudo find / -name kubectl -type f
-sudo find / -name kubelet -type f
-```
-
-Typical locations:
-
-* `/usr/bin/kubeadm`
-* `/usr/local/bin/kubeadm`
-* `/usr/sbin/kubeadm`
-
----
-
-### **2. Check `$PATH`**
-
-```bash
-echo $PATH
-```
-
-Make sure the directory containing `kubeadm` is in your `$PATH`. If, for example, it’s in `/usr/bin`, it should already be included. If it’s somewhere else like `/usr/local/bin`, add it:
-
-```bash
-export PATH=$PATH:/usr/local/bin
-```
-
-You can add it permanently by editing:
-
-```bash
-nano ~/.bashrc
-# add at the end:
-export PATH=$PATH:/usr/local/bin
-source ~/.bashrc
-```
-
----
-
-### **3. Reinstall Kubernetes binaries if missing**
-
-If `kubeadm` was not found in the previous step, reinstall cleanly:
-
-```bash
-sudo yum remove -y kubelet kubeadm kubectl
-sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
-```
-
-Then check:
-
-```bash
-which kubeadm
-which kubectl
-which kubelet
-```
-
----
-
-### **4. Enable and start kubelet**
-
-```bash
-sudo systemctl enable kubelet
-sudo systemctl start kubelet
-```
-
----
-
-After this, you should be able to run:
-
-```bash
-sudo kubeadm init --apiserver-advertise-address=10.57.12.120 --pod-network-cidr=10.57.16.0/23
-```
-
----
-
-I can give you a **full cleanup + reinstall command sequence** to make sure Kubernetes + containerd + Calico is completely reset and `kubeadm` works. This avoids `command not found` issues.
-
-Do you want me to provide that?
-
-
-[root@EQVLWSO2APSIT15 images]# sudo find / -name kubeadm -type f
-sudo find / -name kubectl -type f
-sudo find / -name kubelet -type f
-find: ‘/proc/1985469/task/1985469/net’: Invalid argument
-find: ‘/proc/1985469/net’: Invalid argument
-find: ‘/proc/1985469/task/1985469/net’: Invalid argument
-find: ‘/proc/1985469/net’: Invalid argument
-find: ‘/proc/1985469/task/1985469/net’: Invalid argument
-find: ‘/proc/1985469/net’: Invalid argument
-/var/log/os_details/sysconfig-BRESTART-2025-01-28/kubelet
-/var/log/os_details/sysconfig-ARESTART-2025-01-28/kubelet
-/var/log/os_details/sysconfig-BRESTART-2025-07-19/kubelet
-/var/log/os_details/sysconfig-ARESTART-2025-07-19/kubelet
-/var/log/os_details/sysconfig-ARESTART-2025-11-14/kubelet
-/var/log/os_details/sysconfig-BRESTART-2025-11-27/kubelet
-/var/log/os_details/sysconfig-ARESTART-2025-11-27/kubelet
-/etc/sysconfig/kubelet
-/backups-etc-config-2025-09-03_20-10-14/sysconfig/kubelet
-/backups-etc-config-2025-09-03_20-38-08/sysconfig/kubelet
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod56837be3f611a66e5bf1d0e6eb9cc6de.slice/cri-containerd-0d37d59e8ce4ac750579e5b319c4b816d93202954b5e187b334ee1bab1107117.scope/hugetlb.2MB.rsvd.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod56837be3f611a66e5bf1d0e6eb9cc6de.slice/cri-containerd-0d37d59e8ce4ac750579e5b319c4b816d93202954b5e187b334ee1bab1107117.scope/cpuset.cpus': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod56837be3f611a66e5bf1d0e6eb9cc6de.slice/cri-containerd-0d37d59e8ce4ac750579e5b319c4b816d93202954b5e187b334ee1bab1107117.scope/cgroup.max.depth': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod56837be3f611a66e5bf1d0e6eb9cc6de.slice/cri-containerd-0d37d59e8ce4ac750579e5b319c4b816d93202954b5e187b334ee1bab1107117.scope/io.stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod56837be3f611a66e5bf1d0e6eb9cc6de.slice/cri-containerd-0d37d59e8ce4ac750579e5b319c4b816d93202954b5e187b334ee1bab1107117.scope/hugetlb.2MB.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod56837be3f611a66e5bf1d0e6eb9cc6de.slice/io.stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod56837be3f611a66e5bf1d0e6eb9cc6de.slice/hugetlb.2MB.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/hugetlb.1GB.rsvd.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/rdma.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/hugetlb.2MB.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/cgroup.threads': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/memory.numa_stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/cgroup.kill': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/hugetlb.1GB.rsvd.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/memory.peak': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/hugetlb.2MB.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/cpuset.cpus.partition': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/cpuset.cpus.effective': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cgroup.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/memory.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/io.pressure': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cgroup.procs': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/memory.events.local': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/memory.swap.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/misc.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/cgroup.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/memory.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/io.pressure': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/cgroup.procs': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/memory.events.local': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/memory.swap.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/misc.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/memory.swap.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/cpu.weight': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/memory.swap.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/cgroup.max.descendants': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/cpu.stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/cpu.weight.nice': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/memory.pressure': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/memory.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/pids.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/memory.stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/pids.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/memory.low': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/cpu.pressure': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/cgroup.type': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/io.bfq.weight': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/cgroup.stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/hugetlb.1GB.events.local': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/rdma.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/memory.swap.high': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/hugetlb.2MB.rsvd.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/cpu.idle': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/hugetlb.1GB.rsvd.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/rdma.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/hugetlb.2MB.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/cgroup.threads': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/memory.numa_stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/cgroup.kill': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/hugetlb.1GB.rsvd.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/memory.peak': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/hugetlb.2MB.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/cpuset.cpus.partition': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/cpuset.cpus.effective': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/hugetlb.1GB.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/cgroup.freeze': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/memory.min': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/cpu.max.burst': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/cgroup.controllers': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/cpu.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/hugetlb.2MB.events.local': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/memory.oom.group': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/memory.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/cpuset.mems': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/memory.high': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/pids.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/misc.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/cpuset.mems.effective': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/cgroup.subtree_control': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/io.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/hugetlb.1GB.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/hugetlb.1GB.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/hugetlb.2MB.rsvd.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/cpuset.cpus': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/cgroup.max.depth': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/io.stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-79ba245d3594bd42e27c1b02db8214a50e4c5a0883e5c3afcfc4549da348f9ed.scope/hugetlb.2MB.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/memory.swap.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cpu.weight': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/memory.swap.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cgroup.max.descendants': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cpu.stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cpu.weight.nice': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/memory.pressure': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/memory.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/pids.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/memory.stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/pids.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/memory.low': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cpu.pressure': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cgroup.type': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/io.bfq.weight': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cgroup.stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/hugetlb.1GB.events.local': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/rdma.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/memory.swap.high': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/cgroup.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/memory.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/io.pressure': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/cgroup.procs': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/memory.events.local': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/memory.swap.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/misc.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/memory.swap.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/cpu.weight': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/memory.swap.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/cgroup.max.descendants': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/cpu.stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/cpu.weight.nice': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/memory.pressure': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/memory.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/pids.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/memory.stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/pids.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/memory.low': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/cpu.pressure': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/cgroup.type': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/io.bfq.weight': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/cgroup.stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/hugetlb.1GB.events.local': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/rdma.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/memory.swap.high': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/hugetlb.2MB.rsvd.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/cpu.idle': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/hugetlb.1GB.rsvd.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/rdma.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/hugetlb.2MB.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/cgroup.threads': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/memory.numa_stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/cgroup.kill': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/hugetlb.1GB.rsvd.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/memory.peak': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/hugetlb.2MB.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/cpuset.cpus.partition': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/cpuset.cpus.effective': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/hugetlb.1GB.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/cgroup.freeze': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/memory.min': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/cpu.max.burst': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/cgroup.controllers': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/cpu.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/hugetlb.2MB.events.local': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/memory.oom.group': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/memory.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/cpuset.mems': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/memory.high': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/pids.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/misc.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/cpuset.mems.effective': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/cgroup.subtree_control': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/io.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/hugetlb.1GB.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/hugetlb.1GB.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/hugetlb.2MB.rsvd.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/cpuset.cpus': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/cgroup.max.depth': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/io.stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-e2dfeff5cdfd4d57f1009d1dccca15d3c996b092a3f339f10836cc5a0e15efa7.scope/hugetlb.2MB.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/cgroup.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/memory.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/io.pressure': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/cgroup.procs': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/memory.events.local': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/memory.swap.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/misc.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/memory.swap.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/cpu.weight': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/memory.swap.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/cgroup.max.descendants': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/cpu.stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/cpu.weight.nice': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/memory.pressure': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/memory.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/pids.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/memory.stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/pids.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/memory.low': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/cpu.pressure': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/cgroup.type': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/io.bfq.weight': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/cgroup.stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/hugetlb.1GB.events.local': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/rdma.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/memory.swap.high': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/hugetlb.2MB.rsvd.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/cpu.idle': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/hugetlb.1GB.rsvd.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/rdma.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/hugetlb.2MB.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/cgroup.threads': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/memory.numa_stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/cgroup.kill': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/hugetlb.1GB.rsvd.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/memory.peak': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/hugetlb.2MB.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/cpuset.cpus.partition': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/cpuset.cpus.effective': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/hugetlb.1GB.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/cgroup.freeze': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/memory.min': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/cpu.max.burst': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/cgroup.controllers': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/cpu.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/hugetlb.2MB.events.local': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/memory.oom.group': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/memory.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/cpuset.mems': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/memory.high': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/pids.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/misc.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/cpuset.mems.effective': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/cgroup.subtree_control': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/io.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/hugetlb.1GB.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/hugetlb.1GB.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/hugetlb.2MB.rsvd.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/cpuset.cpus': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/cgroup.max.depth': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/io.stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ded91773b4c5d6832a4c9e2096101fcdbf37269fec589de94dc3665699c8b983.scope/hugetlb.2MB.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/hugetlb.2MB.rsvd.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cpu.idle': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/hugetlb.1GB.rsvd.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/rdma.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/hugetlb.2MB.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cgroup.threads': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/memory.numa_stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cgroup.kill': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/cgroup.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/memory.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/io.pressure': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/cgroup.procs': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/memory.events.local': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/memory.swap.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/misc.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/memory.swap.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/cpu.weight': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/memory.swap.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/cgroup.max.descendants': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/cpu.stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/cpu.weight.nice': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/memory.pressure': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/memory.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/pids.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/memory.stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/pids.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/memory.low': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/cpu.pressure': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/cgroup.type': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/io.bfq.weight': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/cgroup.stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/hugetlb.1GB.events.local': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/rdma.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/memory.swap.high': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/hugetlb.2MB.rsvd.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/cpu.idle': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/hugetlb.1GB.rsvd.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/rdma.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/hugetlb.2MB.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/cgroup.threads': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/memory.numa_stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/cgroup.kill': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/hugetlb.1GB.rsvd.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/memory.peak': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/hugetlb.2MB.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/cpuset.cpus.partition': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/cpuset.cpus.effective': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/hugetlb.1GB.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/cgroup.freeze': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/memory.min': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/cpu.max.burst': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/cgroup.controllers': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/cpu.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/hugetlb.2MB.events.local': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/memory.oom.group': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/memory.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/cpuset.mems': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/memory.high': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/pids.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/misc.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/cpuset.mems.effective': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/cgroup.subtree_control': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/io.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/hugetlb.1GB.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/hugetlb.1GB.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/hugetlb.2MB.rsvd.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/cpuset.cpus': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/cgroup.max.depth': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/io.stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cri-containerd-ca4d7129e85b165e81b5cbea573bfb824ae367e4ad3bbec807bf2ba69adbc561.scope/hugetlb.2MB.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/hugetlb.1GB.rsvd.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/memory.peak': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/hugetlb.2MB.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cpuset.cpus.partition': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cpuset.cpus.effective': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/hugetlb.1GB.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cgroup.freeze': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/memory.min': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cpu.max.burst': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cgroup.controllers': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cpu.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/hugetlb.2MB.events.local': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/memory.oom.group': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/memory.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cpuset.mems': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/memory.high': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/pids.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/misc.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cpuset.mems.effective': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cgroup.subtree_control': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/io.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/hugetlb.1GB.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/hugetlb.1GB.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/hugetlb.2MB.rsvd.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cpuset.cpus': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/cgroup.max.depth': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/io.stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod11770df9941b011e39c60a7fba056cf2.slice/hugetlb.2MB.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/hugetlb.1GB.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/cgroup.freeze': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/memory.min': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod2cd7849316861a89b50a7021634af32f.slice/cgroup.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod2cd7849316861a89b50a7021634af32f.slice/memory.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod2cd7849316861a89b50a7021634af32f.slice/io.pressure': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod2cd7849316861a89b50a7021634af32f.slice/cgroup.procs': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod2cd7849316861a89b50a7021634af32f.slice/memory.events.local': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod2cd7849316861a89b50a7021634af32f.slice/memory.swap.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod2cd7849316861a89b50a7021634af32f.slice/misc.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod2cd7849316861a89b50a7021634af32f.slice/memory.swap.max': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod2cd7849316861a89b50a7021634af32f.slice/cpu.weight': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod2cd7849316861a89b50a7021634af32f.slice/memory.swap.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod2cd7849316861a89b50a7021634af32f.slice/cgroup.max.descendants': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod2cd7849316861a89b50a7021634af32f.slice/cpu.stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod2cd7849316861a89b50a7021634af32f.slice/cpu.weight.nice': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod2cd7849316861a89b50a7021634af32f.slice/memory.pressure': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod2cd7849316861a89b50a7021634af32f.slice/memory.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod2cd7849316861a89b50a7021634af32f.slice/pids.current': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod2cd7849316861a89b50a7021634af32f.slice/memory.stat': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod2cd7849316861a89b50a7021634af32f.slice/pids.events': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod2cd7849316861a89b50a7021634af32f.slice/memory.low': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod2cd7849316861a89b50a7021634af32f.slice/cpu.pressure': Operation not permitted
+rm: cannot remove '/var/run/calico/cgroup/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod2cd7849316861a89b50a7021634af32f.slice/cgroup.type': Operation not permitted
