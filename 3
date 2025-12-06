@@ -1,281 +1,219 @@
-Name:                 calico-node-lslhb
-Namespace:            kube-system
-Priority:             2000001000
-Priority Class Name:  system-node-critical
-Service Account:      calico-node
-Node:                 eqvlwso2apsit15/10.57.12.120
-Start Time:           Sun, 07 Dec 2025 02:44:43 +0530
-Labels:               controller-revision-hash=7559444bdc
-                      k8s-app=calico-node
-                      pod-template-generation=1
-Annotations:          <none>
-Status:               Pending
-IP:                   10.57.12.120
-IPs:
-  IP:           10.57.12.120
-Controlled By:  DaemonSet/calico-node
-Init Containers:
-  upgrade-ipam:
-    Container ID:  containerd://379583da06a7cd0c0bd5ea4f60ef46be7fb193ca24ce77d8f7324c8ec6121330
-    Image:         harbour.equitasbank.com/kubernetes-master/calico-cni:v3.29.2
-    Image ID:      sha256:cda13293c895a8a3b06c1e190b70fb6fe61036db2e59764036fc6e65ec374693
-    Port:          <none>
-    Host Port:     <none>
-    Command:
-      /opt/cni/bin/calico-ipam
-      -upgrade
-    State:          Terminated
-      Reason:       Completed
-      Exit Code:    0
-      Started:      Sun, 07 Dec 2025 02:44:44 +0530
-      Finished:     Sun, 07 Dec 2025 02:44:44 +0530
-    Ready:          True
-    Restart Count:  0
-    Environment Variables from:
-      kubernetes-services-endpoint  ConfigMap  Optional: true
-    Environment:
-      KUBERNETES_NODE_NAME:        (v1:spec.nodeName)
-      CALICO_NETWORKING_BACKEND:  <set to the key 'calico_backend' of config map 'calico-config'>  Optional: false
-    Mounts:
-      /host/opt/cni/bin from cni-bin-dir (rw)
-      /var/lib/cni/networks from host-local-net-dir (rw)
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-xndcv (ro)
-  install-cni:
-    Container ID:  containerd://3dd79c9ea13ce1bf7bdcd512ef85811c17c76a86c9caaf82e9309bd25067d345
-    Image:         harbour.equitasbank.com/kubernetes-master/calico-cni:v3.29.2
-    Image ID:      sha256:cda13293c895a8a3b06c1e190b70fb6fe61036db2e59764036fc6e65ec374693
-    Port:          <none>
-    Host Port:     <none>
-    Command:
-      /opt/cni/bin/install
-    State:          Waiting
-      Reason:       CrashLoopBackOff
-    Last State:     Terminated
-      Reason:       Error
-      Exit Code:    1
-      Started:      Sun, 07 Dec 2025 02:46:06 +0530
-      Finished:     Sun, 07 Dec 2025 02:46:07 +0530
-    Ready:          False
-    Restart Count:  4
-    Environment Variables from:
-      kubernetes-services-endpoint  ConfigMap  Optional: true
-    Environment:
-      CNI_CONF_NAME:         10-calico.conflist
-      CNI_NETWORK_CONFIG:    <set to the key 'cni_network_config' of config map 'calico-config'>  Optional: false
-      KUBERNETES_NODE_NAME:   (v1:spec.nodeName)
-      CNI_MTU:               <set to the key 'veth_mtu' of config map 'calico-config'>  Optional: false
-      SLEEP:                 false
-    Mounts:
-      /host/etc/cni/net.d from cni-net-dir (rw)
-      /host/opt/cni/bin from cni-bin-dir (rw)
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-xndcv (ro)
-  mount-bpffs:
-    Container ID:
-    Image:         harbour.equitasbank.com/kubernetes-master/calico-node:v3.29.2
-    Image ID:
-    Port:          <none>
-    Host Port:     <none>
-    Command:
-      calico-node
-      -init
-      -best-effort
-    State:          Waiting
-      Reason:       PodInitializing
-    Ready:          False
-    Restart Count:  0
-    Environment:    <none>
-    Mounts:
-      /nodeproc from nodeproc (ro)
-      /sys/fs from sys-fs (rw)
-      /var/run/calico from var-run-calico (rw)
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-xndcv (ro)
-Containers:
-  calico-node:
-    Container ID:
-    Image:          harbour.equitasbank.com/kubernetes-master/calico-node:v3.29.2
-    Image ID:
-    Port:           <none>
-    Host Port:      <none>
-    State:          Waiting
-      Reason:       PodInitializing
-    Ready:          False
-    Restart Count:  0
-    Requests:
-      cpu:      250m
-    Liveness:   exec [/bin/calico-node -felix-live -bird-live] delay=10s timeout=10s period=10s #success=1 #failure=6
-    Readiness:  exec [/bin/calico-node -felix-ready -bird-ready] delay=0s timeout=10s period=10s #success=1 #failure=3
-    Environment Variables from:
-      kubernetes-services-endpoint  ConfigMap  Optional: true
-    Environment:
-      DATASTORE_TYPE:                     kubernetes
-      WAIT_FOR_DATASTORE:                 true
-      NODENAME:                            (v1:spec.nodeName)
-      CALICO_NETWORKING_BACKEND:          <set to the key 'calico_backend' of config map 'calico-config'>  Optional: false
-      CLUSTER_TYPE:                       k8s,bgp
-      IP:                                 autodetect
-      CALICO_IPV4POOL_IPIP:               Always
-      CALICO_IPV4POOL_VXLAN:              Never
-      CALICO_IPV6POOL_VXLAN:              Never
-      FELIX_IPINIPMTU:                    <set to the key 'veth_mtu' of config map 'calico-config'>  Optional: false
-      FELIX_VXLANMTU:                     <set to the key 'veth_mtu' of config map 'calico-config'>  Optional: false
-      FELIX_WIREGUARDMTU:                 <set to the key 'veth_mtu' of config map 'calico-config'>  Optional: false
-      CALICO_DISABLE_FILE_LOGGING:        true
-      FELIX_DEFAULTENDPOINTTOHOSTACTION:  ACCEPT
-      FELIX_IPV6SUPPORT:                  false
-      FELIX_HEALTHENABLED:                true
-    Mounts:
-      /host/etc/cni/net.d from cni-net-dir (rw)
-      /lib/modules from lib-modules (ro)
-      /run/xtables.lock from xtables-lock (rw)
-      /sys/fs/bpf from bpffs (rw)
-      /var/lib/calico from var-lib-calico (rw)
-      /var/log/calico/cni from cni-log-dir (ro)
-      /var/run/calico from var-run-calico (rw)
-      /var/run/nodeagent from policysync (rw)
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-xndcv (ro)
-Conditions:
-  Type                        Status
-  PodReadyToStartContainers   True
-  Initialized                 False
-  Ready                       False
-  ContainersReady             False
-  PodScheduled                True
-Volumes:
-  lib-modules:
-    Type:          HostPath (bare host directory volume)
-    Path:          /lib/modules
-    HostPathType:
-  var-run-calico:
-    Type:          HostPath (bare host directory volume)
-    Path:          /var/run/calico
-    HostPathType:
-  var-lib-calico:
-    Type:          HostPath (bare host directory volume)
-    Path:          /var/lib/calico
-    HostPathType:
-  xtables-lock:
-    Type:          HostPath (bare host directory volume)
-    Path:          /run/xtables.lock
-    HostPathType:  FileOrCreate
-  sys-fs:
-    Type:          HostPath (bare host directory volume)
-    Path:          /sys/fs/
-    HostPathType:  DirectoryOrCreate
-  bpffs:
-    Type:          HostPath (bare host directory volume)
-    Path:          /sys/fs/bpf
-    HostPathType:  Directory
-  nodeproc:
-    Type:          HostPath (bare host directory volume)
-    Path:          /proc
-    HostPathType:
-  cni-bin-dir:
-    Type:          HostPath (bare host directory volume)
-    Path:          /opt/cni/bin
-    HostPathType:
-  cni-net-dir:
-    Type:          HostPath (bare host directory volume)
-    Path:          /etc/cni/net.d
-    HostPathType:
-  cni-log-dir:
-    Type:          HostPath (bare host directory volume)
-    Path:          /var/log/calico/cni
-    HostPathType:
-  host-local-net-dir:
-    Type:          HostPath (bare host directory volume)
-    Path:          /var/lib/cni/networks
-    HostPathType:
-  policysync:
-    Type:          HostPath (bare host directory volume)
-    Path:          /var/run/nodeagent
-    HostPathType:  DirectoryOrCreate
-  kube-api-access-xndcv:
-    Type:                    Projected (a volume that contains injected data from multiple sources)
-    TokenExpirationSeconds:  3607
-    ConfigMapName:           kube-root-ca.crt
-    Optional:                false
-    DownwardAPI:             true
-QoS Class:                   Burstable
-Node-Selectors:              kubernetes.io/os=linux
-Tolerations:                 :NoSchedule op=Exists
-                             :NoExecute op=Exists
-                             CriticalAddonsOnly op=Exists
-                             node.kubernetes.io/disk-pressure:NoSchedule op=Exists
-                             node.kubernetes.io/memory-pressure:NoSchedule op=Exists
-                             node.kubernetes.io/network-unavailable:NoSchedule op=Exists
-                             node.kubernetes.io/not-ready:NoExecute op=Exists
-                             node.kubernetes.io/pid-pressure:NoSchedule op=Exists
-                             node.kubernetes.io/unreachable:NoExecute op=Exists
-                             node.kubernetes.io/unschedulable:NoSchedule op=Exists
-Events:
-  Type     Reason     Age                 From               Message
-  ----     ------     ----                ----               -------
-  Normal   Scheduled  2m8s                default-scheduler  Successfully assigned kube-system/calico-node-lslhb to eqvlwso2apsit15
-  Normal   Pulled     2m7s                kubelet            Container image "harbour.equitasbank.com/kubernetes-master/calico-cni:v3.29.2" already present on machine
-  Normal   Created    2m7s                kubelet            Created container: upgrade-ipam
-  Normal   Started    2m7s                kubelet            Started container upgrade-ipam
-  Normal   Pulled     45s (x5 over 2m7s)  kubelet            Container image "harbour.equitasbank.com/kubernetes-master/calico-cni:v3.29.2" already present on machine
-  Normal   Created    45s (x5 over 2m7s)  kubelet            Created container: install-cni
-  Normal   Started    45s (x5 over 2m6s)  kubelet            Started container install-cni
-  Warning  BackOff    3s (x10 over 2m5s)  kubelet            Back-off restarting failed container install-cni in pod calico-node-lslhb_kube-system(9024aa30-7885-4eff-8aef-02fdf3ef9d20)
+Your **Calico pods are stuck in Pending/CrashLoopBackOff** because **CNI installation is failing** *and* **Calico cannot talk to the API server due to a Kubernetes certificate trust mismatch**.
 
-[root@EQVLWSO2APSIT15 images]# kubectl describe po calico-kube-controllers-6ffb5df975-nvg2d -n kube-system
-Name:                 calico-kube-controllers-6ffb5df975-nvg2d
-Namespace:            kube-system
-Priority:             2000000000
-Priority Class Name:  system-cluster-critical
-Service Account:      calico-kube-controllers
-Node:                 eqvlwso2apsit15/10.57.12.120
-Start Time:           Sun, 07 Dec 2025 02:44:43 +0530
-Labels:               k8s-app=calico-kube-controllers
-                      pod-template-hash=6ffb5df975
-Annotations:          <none>
-Status:               Pending
-IP:
-IPs:                  <none>
-Controlled By:        ReplicaSet/calico-kube-controllers-6ffb5df975
-Containers:
-  calico-kube-controllers:
-    Container ID:
-    Image:          harbour.equitasbank.com/kubernetes-master/calico-kube-controllers:v3.29.2
-    Image ID:
-    Port:           <none>
-    Host Port:      <none>
-    State:          Waiting
-      Reason:       ContainerCreating
-    Ready:          False
-    Restart Count:  0
-    Liveness:       exec [/usr/bin/check-status -l] delay=10s timeout=10s period=10s #success=1 #failure=6
-    Readiness:      exec [/usr/bin/check-status -r] delay=0s timeout=1s period=10s #success=1 #failure=3
-    Environment:
-      ENABLED_CONTROLLERS:  node
-      DATASTORE_TYPE:       kubernetes
-    Mounts:
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-4f4g8 (ro)
-Conditions:
-  Type                        Status
-  PodReadyToStartContainers   False
-  Initialized                 True
-  Ready                       False
-  ContainersReady             False
-  PodScheduled                True
-Volumes:
-  kube-api-access-4f4g8:
-    Type:                    Projected (a volume that contains injected data from multiple sources)
-    TokenExpirationSeconds:  3607
-    ConfigMapName:           kube-root-ca.crt
-    Optional:                false
-    DownwardAPI:             true
-QoS Class:                   BestEffort
-Node-Selectors:              kubernetes.io/os=linux
-Tolerations:                 CriticalAddonsOnly op=Exists
-                             node-role.kubernetes.io/control-plane:NoSchedule
-                             node-role.kubernetes.io/master:NoSchedule
-                             node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
-                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
-Events:
-  Type     Reason                  Age               From               Message
-  ----     ------                  ----              ----               -------
-  Normal   Scheduled               2m55s             default-scheduler  Successfully assigned kube-system/calico-kube-controllers-6ffb5df975-nvg2d to eqvlwso2apsit15
-  Warning  FailedCreatePodSandBox  2m54s             kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "646e0f66f581fd20611064ebe246e85fa57c66cb8eae4016a4f69f927262ffac": plugin type="calico" failed (add): error getting ClusterInformation: Get "https://10.96.0.1:443/apis/crd.projectcalico.org/v1/clusterinformations/default": tls: failed to verify certificate: x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "kubernetes")
-  Warning  FailedCreatePodSandBox  2m42s             kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "3ef7d7830fcc66fc21217a3d63016d53b69a3ad297d62a563b4a010ce0bb9474": plugin type="calico" failed (add): error getting ClusterInformation: Get "https://10.96.0.1:443/apis/crd.projectcalico.org/v1/clusterinformations/default": tls: failed to verify certificate: x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "kubernetes")
+Both issues are connected, and I’ll break it down clearly with the exact steps to fix them.
+
+---
+
+# ✅ **ISSUE 1 — install-cni is CrashLoopBackOff**
+
+### **Error**
+
+```
+install-cni → Exit Code 1
+```
+
+This means Calico is failing to install `/etc/cni/net.d/10-calico.conflist` on the node.
+
+### Possible causes
+
+1. Old CNI files still exist
+2. Wrong directory permissions
+3. Conflicting CNI plugin (weave, flannel, old calico)
+4. Missing `/opt/cni/bin` or `/etc/cni/net.d` on the host
+5. ContainerD was reinstalled recently (CNI directory emptied)
+
+---
+
+# 🔧 **FIX ISSUE 1 — Clean and recreate CNI directories**
+
+### **1. Remove old CNI config**
+
+Run on each node:
+
+```bash
+sudo rm -rf /etc/cni/net.d/*
+sudo rm -rf /var/lib/cni/networks/*
+```
+
+---
+
+### **2. Ensure CNI directories exist**
+
+```bash
+sudo mkdir -p /etc/cni/net.d
+sudo mkdir -p /opt/cni/bin
+sudo mkdir -p /var/lib/cni/networks
+```
+
+---
+
+### **3. Restart containerd**
+
+```bash
+sudo systemctl restart containerd
+```
+
+---
+
+### **4. Restart kubelet**
+
+```bash
+sudo systemctl restart kubelet
+```
+
+Then watch:
+
+```bash
+kubectl get pods -n kube-system -w
+```
+
+---
+
+# ❌ **ISSUE 2 — TLS certificate error with API server**
+
+You have this critical error:
+
+```
+tls: failed to verify certificate: x509: certificate signed by unknown authority
+```
+
+This means **Calico does not trust the Kube API Server certificate**.
+
+### This **always happens** when:
+
+* You **reinstalled containerd** or deleted `/var/lib/kubelet/pki`
+* You regenerated cluster certificates (maybe due to upgrade)
+* The API server certificate changed but the node still has old CA certs
+
+---
+
+# 🔧 **FIX ISSUE 2 — Replace API server CA on all nodes**
+
+### **1. Verify CA file mounted by kubelet**
+
+The CA used by Calico is:
+
+```
+/etc/kubernetes/pki/ca.crt
+```
+
+On the node compare:
+
+```bash
+openssl x509 -in /etc/kubernetes/pki/ca.crt -noout -fingerprint
+```
+
+Compare with API server cert:
+
+```bash
+openssl s_client -connect 10.96.0.1:443 -showcerts </dev/null 2>/dev/null | openssl x509 -noout -fingerprint
+```
+
+If fingerprints differ → **Kubelet CA is invalid**.
+
+---
+
+### **2. Replace incorrect CA**
+
+Copy CA from master node:
+
+```bash
+scp root@<control-plane>:/etc/kubernetes/pki/ca.crt /etc/kubernetes/pki/ca.crt
+```
+
+---
+
+### **3. Restart kubelet**
+
+```bash
+sudo systemctl restart kubelet
+```
+
+---
+
+### **4. Verify API access**
+
+From node:
+
+```bash
+curl --cacert /etc/kubernetes/pki/ca.crt https://10.96.0.1:443/version
+```
+
+Should return JSON.
+
+---
+
+# 🧩 WHY ARE BOTH PODS STUCK?
+
+### **calico-node**
+
+Cannot install CNI → CrashLoopBackOff
+
+### **calico-kube-controllers**
+
+Cannot communicate with API because of CA mismatch:
+
+```
+x509: certificate signed by unknown authority
+```
+
+Until both problems are fixed, Calico will never start.
+
+---
+
+# 💯 **FINAL CHECKLIST — Run in order**
+
+### **Step 1 — Cleanup CNI directories**
+
+```
+rm -rf /etc/cni/net.d/*
+rm -rf /var/lib/cni/networks/*
+```
+
+### **Step 2 — Ensure CNI directories exist**
+
+```
+mkdir -p /etc/cni/net.d /opt/cni/bin /var/lib/cni/networks
+```
+
+### **Step 3 — Fix Kubernetes CA mismatch**
+
+Replace `/etc/kubernetes/pki/ca.crt` with the correct one.
+
+### **Step 4 — Restart services**
+
+```
+systemctl restart containerd
+systemctl restart kubelet
+```
+
+### **Step 5 — Delete stuck Calico pods**
+
+```
+kubectl delete pod -n kube-system -l k8s-app=calico-node
+kubectl delete pod -n kube-system -l k8s-app=calico-kube-controllers
+```
+
+They will recreate automatically.
+
+---
+
+# If you want, I can:
+
+✔ Check logs from Calico:
+
+```
+kubectl logs <pod> -n kube-system -c install-cni
+```
+
+✔ Validate your CA file
+✔ Help rebuild Calico YAML with correct settings
+✔ Verify API server certificate chain
+
+Just send me:
+
+```
+journalctl -u kubelet -f | head -n 50
+```
+
+I’ll guide you line by line.
