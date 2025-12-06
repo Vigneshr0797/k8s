@@ -1,2 +1,6 @@
-sudo dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+[root@EQVLWSO2APSIT02 ~]# sudo rm -rf /etc/containerd
+sudo rm -rf /var/lib/containerd
+sudo rm -rf /run/containerd
+rm: cannot remove '/run/containerd/io.containerd.runtime.v2.task/k8s.io/a7c2d516daaca6ca9487e1f56bd0bb89a685b28384e9c10bb37740a25e7d0426/rootfs': Device or resource busy
+
 
