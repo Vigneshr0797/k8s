@@ -1,0 +1,217 @@
+You found the **exact root cause**:
+
+### 🚨 Node has this taint:
+
+```
+node.kubernetes.io/not-ready:NoSchedule
+```
+
+and the **Ready** condition is:
+
+```
+Ready: False
+Reason: container runtime network not ready
+Network plugin returns error: cni plugin not initialized
+```
+
+📌 **This means:**
+Your master node is **NotReady** because **Calico CNI did not come up**, and because the node is NotReady, Kubernetes automatically applied the taint:
+
+```
+node.kubernetes.io/not-ready:NoSchedule
+```
+
+Because of that taint, **CoreDNS and Calico cannot schedule**, and you have a deadlock:
+
+---
+
+# ❗ DEADLOCK SITUATION
+
+### 1. Calico cannot start → CNI not initialized
+
+### 2. Node becomes NotReady
+
+### 3. Node gets taint: `node.kubernetes.io/not-ready:NoSchedule`
+
+### 4. As long as Calico cannot start, node stays NotReady
+
+### 5. CoreDNS and Calico cannot schedule due to the taint
+
+This is a classic bootstrap issue.
+
+---
+
+# ✅ FIX THE ISSUE STEP BY STEP
+
+We must do **two fixes**:
+
+---
+
+# ✅ STEP 1 — Remove the taint temporarily
+
+This will allow Calico and CoreDNS to schedule even if the node is NotReady.
+
+Run:
+
+```
+kubectl taint nodes eqvlwso2apsit15-master1 node.kubernetes.io/not-ready:NoSchedule-
+```
+
+This removes the "NotReady" taint.
+
+After running this, run:
+
+```
+kubectl get pods -n kube-system
+```
+
+You should see Calico and CoreDNS starting to schedule.
+
+---
+
+# ❗ STEP 2 — Fix the real root cause: Calico CNI Init:Error
+
+Your pod showed this:
+
+```
+calico-node Init:Error
+cni plugin not initialized
+```
+
+That means **Calico cannot load CNI binaries**.
+
+This is because your container runtime installation was broken earlier:
+
+```
+dial unix /var/run/containerd/containerd.sock: no such file or directory
+```
+
+### You likely installed Containerd manually OR Docker before, and paths are wrong.
+
+### Let's verify containerd:
+
+Run:
+
+```
+systemctl status containerd
+```
+
+If it's not running, start it:
+
+```
+systemctl start containerd
+systemctl enable containerd
+```
+
+Also check:
+
+```
+ls -l /var/run/containerd/containerd.sock
+```
+
+If this file does Not Exist → kubelet cannot talk to containerd → CNI will never start → Node will stay NotReady.
+
+---
+
+# 🔧 STEP 3 — Verify your kubelet config
+
+Run:
+
+```
+cat /var/lib/kubelet/kubeadm-flags.env
+```
+
+Look for:
+
+```
+--container-runtime-endpoint=unix:///run/containerd/containerd.sock
+```
+
+or
+
+```
+--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock
+```
+
+Make sure the actual socket exists at the same path.
+
+---
+
+# 🔧 STEP 4 — Check CNI files
+
+Run:
+
+```
+ls /etc/cni/net.d/
+```
+
+You should see something like:
+
+```
+10-calico.conflist
+```
+
+If the folder is empty → Calico never installed.
+
+Run:
+
+```
+kubectl logs -n kube-system calico-node-wbst5 -c install-cni
+```
+
+Share the log if error.
+
+---
+
+# EXPECTED RESULT AFTER FIX
+
+Once containerd is running + CNI binaries installed, you’ll see:
+
+```
+Ready: True
+```
+
+and all kube-system pods will become Running.
+
+---
+
+# 🧨 VERY IMPORTANT
+
+Your entire issue is caused by:
+
+* containerd not running / not installed properly
+* CNI (Calico) init failing
+* node NotReady
+* taint blocking scheduling
+
+Fixing these will restore the cluster.
+
+---
+
+# ✔️ Now do this and share output:
+
+### 1. Remove taint:
+
+```
+kubectl taint nodes eqvlwso2apsit15-master1 node.kubernetes.io/not-ready:NoSchedule-
+```
+
+### 2. Check containerd:
+
+```
+systemctl status containerd
+```
+
+### 3. Check containerd socket:
+
+```
+ls -l /var/run/containerd/containerd.sock
+```
+
+### 4. Check CNI:
+
+```
+ls /etc/cni/net.d/
+```
+
+Send the outputs — then I will guide you precisely.
