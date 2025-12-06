@@ -84,3 +84,24 @@ sudo kubeadm init --apiserver-advertise-address=10.57.12.120 --pod-network-cidr=
 I can give you a **full cleanup + reinstall command sequence** to make sure Kubernetes + containerd + Calico is completely reset and `kubeadm` works. This avoids `command not found` issues.
 
 Do you want me to provide that?
+
+
+[root@EQVLWSO2APSIT15 images]# sudo find / -name kubeadm -type f
+sudo find / -name kubectl -type f
+sudo find / -name kubelet -type f
+find: ‘/proc/1985469/task/1985469/net’: Invalid argument
+find: ‘/proc/1985469/net’: Invalid argument
+find: ‘/proc/1985469/task/1985469/net’: Invalid argument
+find: ‘/proc/1985469/net’: Invalid argument
+find: ‘/proc/1985469/task/1985469/net’: Invalid argument
+find: ‘/proc/1985469/net’: Invalid argument
+/var/log/os_details/sysconfig-BRESTART-2025-01-28/kubelet
+/var/log/os_details/sysconfig-ARESTART-2025-01-28/kubelet
+/var/log/os_details/sysconfig-BRESTART-2025-07-19/kubelet
+/var/log/os_details/sysconfig-ARESTART-2025-07-19/kubelet
+/var/log/os_details/sysconfig-ARESTART-2025-11-14/kubelet
+/var/log/os_details/sysconfig-BRESTART-2025-11-27/kubelet
+/var/log/os_details/sysconfig-ARESTART-2025-11-27/kubelet
+/etc/sysconfig/kubelet
+/backups-etc-config-2025-09-03_20-10-14/sysconfig/kubelet
+/backups-etc-config-2025-09-03_20-38-08/sysconfig/kubelet
