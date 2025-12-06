@@ -31,3 +31,116 @@ rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/e2dfeff5cdfd4d57f1009d1d
 rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/d37b7a80dab446fac7661178baa9d494ecaff604d9334d3433821ecd0d6513a2/rootfs': Device or resource busy
 rm: cannot remove 'io.containerd.runtime.v2.task/k8s.io/6ed74f1aa0b2491b670f2fa3f66776165a03abb7e40c847e40bf61ea1085a736/rootfs': Device or resource busy
 [root@EQVLWSO2APSIT15 containerd]#
+
+
+
+
+
+You’re trying to force-delete `/run/containerd` while containerd **is still running** and still holding active mounts (shm mounts + rootfs mounts).
+That’s why the kernel is replying **"Device or resource busy"** — these mounts belong to running pods / containers.
+
+To cleanly delete `/run/containerd`, you **must stop containerd and kubelet**, unmount everything, and then remove the directory.
+
+Here is the correct and safe approach:
+
+---
+
+# ✅ **Correct Steps to Completely Remove `/run/containerd` (RHEL 9.x)**
+
+### **1. Stop kubelet**
+
+Kubelet keeps containers alive. Stop it first:
+
+```bash
+sudo systemctl stop kubelet
+```
+
+---
+
+### **2. Stop containerd**
+
+```bash
+sudo systemctl stop containerd
+```
+
+Confirm it stopped:
+
+```bash
+ps aux | grep containerd
+```
+
+---
+
+### **3. Unmount leftover containerd mount points**
+
+Check all busy mounts:
+
+```bash
+mount | grep containerd
+mount | grep k8s.io
+```
+
+Force-unmount them:
+
+```bash
+sudo umount -l /run/containerd/io.containerd.grpc.v1.cri/sandboxes/*/shm 2>/dev/null
+sudo umount -l /run/containerd/io.containerd.runtime.v2.task/k8s.io/*/rootfs 2>/dev/null
+```
+
+Lazy unmount (`-l`) force removes even if busy.
+
+---
+
+### **4. Now remove the directory safely**
+
+```bash
+sudo rm -rf /run/containerd/*
+```
+
+If you also want to fully clean containerd:
+
+```bash
+sudo rm -rf /etc/containerd
+sudo rm -rf /var/lib/containerd
+sudo rm -rf /run/containerd
+```
+
+---
+
+# ⚠️ Important Note
+
+These mounts exist **because pods were still running**.
+Stopping kubelet + containerd safely tears them down.
+
+If for some reason containerd refuses to stop:
+
+### Force kill all containerd shims
+
+```bash
+sudo pkill -9 containerd-shim
+sudo pkill -9 containerd
+```
+
+Then try the unmount & deletion again.
+
+---
+
+# ✅ **Summary**
+
+| Problem                       | Reason                                   | Fix                                               |
+| ----------------------------- | ---------------------------------------- | ------------------------------------------------- |
+| `rm: Device or resource busy` | containerd still running, holding mounts | Stop kubelet → stop containerd → unmount → remove |
+| Cannot delete rootfs/shm      | Active pod mounts                        | Lazy-unmount `umount -l`                          |
+| Directory not empty           | Shims still alive                        | Kill shims                                        |
+
+---
+
+If you want, I can also give you:
+
+✅ A full cleanup script
+or
+✅ Commands to reinstall Docker or containerd cleanly
+or
+✅ Commands to migrate from containerd → Docker safely
+
+Just tell me.
