@@ -27,3 +27,4 @@ harbour.equitasbank.com/kubernetes v1.34        pushing content
 application/vnd.docker.distribution.manifest.list.v2+json sha256:e009ef63deaf797763b5bd423d04a099a2fe414a081bf7d216b43bc9e76b9077
 Pushing to OCI Registry (harbour.equitasbank.com/kubernetes-v1.34.2/kube-apiserver:v1.34.2)     elapsed: 0.0 s  total:   0.0 B  (0.0 B/s)
 ctr: content digest sha256:e1e4a34f796818b3c064ab8642c26e073da71af04504acb00241c34412f633fa: not found
+ Warning  FailedScheduling  68s (x20 over 96m)  default-scheduler  0/1 nodes are available: 1 node(s) had untolerated taint(s). no new claims to deallocate, preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.
