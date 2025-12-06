@@ -29,6 +29,76 @@ sudo rm -rf /var/lib/calico
 sudo rm -rf /var/run/calico
 sudo rm -rf /var/run/nodeagent
 ```
+The errors you’re seeing are expected when trying to remove cgroup files under `/var/run/calico/cgroup` (or any container runtime-managed cgroup paths) manually using `rm`. These files are **managed by the kernel and container runtime**, so normal `rm` operations—even as root—cannot delete them. Attempting to forcibly remove them will always produce `Operation not permitted`.
+
+Here’s what you need to know and do:
+
+---
+
+### **Why this happens**
+
+1. **Cgroup files are kernel-managed**:
+
+   * Files like `memory.current`, `cpu.max`, `pids.max` are not regular files—they represent kernel cgroup control and statistics.
+   * Deleting them manually is not allowed; the kernel prevents it to maintain process isolation and resource accounting.
+
+2. **Managed by container runtimes**:
+
+   * Container runtimes like **containerd**, **CRI-O**, or **Docker** create these cgroups for pods/containers.
+   * Manually deleting the directories/files won’t work—you need to stop/remove the containers or pods first.
+
+---
+
+### **Safe ways to clean these directories**
+
+#### **1. Delete the Kubernetes pods**
+
+If these cgroups are for Kubernetes pods:
+
+```bash
+kubectl get pods -A | grep <pod-name-or-namespace>
+kubectl delete pod <pod-name> -n <namespace>
+```
+
+Deleting the pod properly will automatically clean up the cgroup directories under `/var/run/calico/cgroup`.
+
+---
+
+#### **2. Stop the container manually via containerd**
+
+If you want to remove it without Kubernetes:
+
+```bash
+# List containers
+sudo ctr -n k8s.io containers list
+
+# Stop a container
+sudo ctr -n k8s.io tasks kill <container-id>
+sudo ctr -n k8s.io tasks delete <container-id>
+```
+
+After stopping the container, the cgroup entries should automatically disappear.
+
+---
+
+#### **3. Reboot the node**
+
+If there are stale or orphaned cgroups (for example, after container runtime crashes):
+
+* Rebooting the node will clear `/var/run/calico/cgroup` since it’s a runtime-managed tmpfs.
+
+---
+
+### ⚠️ **Important**
+
+* **Do not use `rm -rf`** on `/var/run/calico/cgroup` directly. That can corrupt the container runtime state.
+* Always clean up through the **container runtime** or **Kubernetes**.
+
+---
+
+If you want, I can give you a **step-by-step command set to safely clean up all stale pod cgroups on this node** without rebooting.
+
+Do you want me to provide that?
 
 ---
 
@@ -89,3 +159,4 @@ Cleaning `/etc/cni/net.d`, `/opt/cni/bin`, `/var/lib/calico`, then reapplying Ca
 If you want, I can give you a **full ready-to-run sequence** to completely clean Kubernetes, containerd, and CNI/Calico and **reinitialize a working single-node cluster** from scratch.
 
 Do you want me to do that?
+
