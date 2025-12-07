@@ -1,10 +1,106 @@
-rm: cannot remove 'cgroup/kubepods.slice/io.max': Operation not permitted
-rm: cannot remove 'cgroup/kubepods.slice/hugetlb.1GB.events': Operation not permitted
-rm: cannot remove 'cgroup/kubepods.slice/hugetlb.1GB.current': Operation not permitted
-rm: cannot remove 'cgroup/kubepods.slice/hugetlb.2MB.rsvd.current': Operation not permitted
-rm: cannot remove 'cgroup/kubepods.slice/cpuset.cpus': Operation not permitted
-rm: cannot remove 'cgroup/kubepods.slice/cgroup.max.depth': Operation not permitted
-rm: cannot remove 'cgroup/kubepods.slice/io.stat': Operation not permitted
-rm: cannot remove 'cgroup/kubepods.slice/hugetlb.2MB.max': Operation not permitted
-rm: cannot remove 'cgroup/cgroup.max.depth': Operation not permitted
-rm: cannot remove 'cgroup/io.stat': Operation not permitted
+Those errors happen **because you are trying to delete cgroup v2 system-managed files**, which **cannot and must not be removed manually**.
+These files belong to the **Linux unified cgroup hierarchy**, and **the kernel owns them**, so `rm` will *always* fail with “Operation not permitted” — even as root.
+
+👉 **IMPORTANT:**
+**NEVER delete files inside `/sys/fs/cgroup`** (or similar cgroup mount points).
+You will break kubelet, containerd, systemd, and the node.
+
+---
+
+# ✅ Why you saw these errors
+
+Directories like:
+
+```
+/sys/fs/cgroup/kubepods.slice/
+/sys/fs/cgroup/cgroup.max.depth
+/sys/fs/cgroup/io.stat
+```
+
+are:
+
+✔ **Kernel-generated pseudo-files**
+✔ **Backed by memory, not disk**
+✔ **Read-only or write-controlled**
+✔ **Protected by the kernel**
+
+Trying to delete them gives:
+
+```
+Operation not permitted
+```
+
+This is expected.
+
+---
+
+# ⚠️ If you were trying to “reset” Kubernetes
+
+Many users try to manually remove cgroup folders after kubeadm reset or containerd reset — **this is NOT required and NOT safe.**
+
+Instead use the correct commands:
+
+### Reset kubeadm safely:
+
+```bash
+sudo kubeadm reset -f
+sudo systemctl restart kubelet
+sudo systemctl restart containerd
+```
+
+### Reset containerd:
+
+```bash
+sudo systemctl stop containerd
+sudo rm -rf /var/lib/containerd/*
+sudo systemctl start containerd
+```
+
+---
+
+# 👍 If you wanted to clean the system for a fresh cluster install
+
+Use **only** these (safe) locations:
+
+### Clean Kubernetes:
+
+```bash
+sudo systemctl stop kubelet
+sudo kubeadm reset -f
+sudo rm -rf /etc/kubernetes
+sudo rm -rf $HOME/.kube
+```
+
+### Clean container layers:
+
+```bash
+sudo rm -rf /var/lib/docker   # if using docker
+sudo rm -rf /var/lib/containerd
+sudo rm -rf /var/lib/kubelet/*
+```
+
+### DO NOT TOUCH:
+
+❌ `/sys/fs/cgroup`
+❌ `/cgroup/*`
+❌ `/proc/*`
+❌ `/sys/*`
+
+These are kernel-managed.
+
+---
+
+# ⭐ If you tell me what command you were running when you got these errors…
+
+…I can tell you the exact safe cleanup steps **for your environment** (Oracle Linux 9 + containerd + kubeadm).
+
+---
+
+# ❓ Are you trying to:
+
+1. Completely reset the node?
+2. Reinstall Kubernetes?
+3. Fix the `Node NotReady` (CNI plugin error)?
+4. Clean up containerd/cgroups after a failed install?
+
+Tell me 1–4 and I will give you the exact steps to fix your cluster safely.
