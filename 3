@@ -1,89 +1,229 @@
-[root@EQVLWSO2APSIT15 images]# kubectl get po -n kube-system
-NAME                                      READY   STATUS              RESTARTS   AGE
-calico-kube-controllers-5766bdd7c-8vk6s   0/1     ContainerCreating   0          20s
-calico-node-ft82g                         0/1     Init:2/3            0          20s
-coredns-66bc5c9577-lvrl8                  0/1     ContainerCreating   0          70s
-coredns-66bc5c9577-wlk9w                  0/1     ContainerCreating   0          70s
-etcd-eqvlwso2apsit15                      1/1     Running             3          77s
-kube-apiserver-eqvlwso2apsit15            1/1     Running             3          77s
-kube-controller-manager-eqvlwso2apsit15   1/1     Running             3          77s
-kube-proxy-fzmn7                          1/1     Running             0          70s
-kube-scheduler-eqvlwso2apsit15            1/1     Running             3          77s
-[root@EQVLWSO2APSIT15 images]# kubectl describe pod calico-kube-controllers-5766bdd7c-8vk6s -n kube-system
-Name:                 calico-kube-controllers-5766bdd7c-8vk6s
-Namespace:            kube-system
-Priority:             2000000000
-Priority Class Name:  system-cluster-critical
-Service Account:      calico-kube-controllers
-Node:                 eqvlwso2apsit15/10.57.12.120
-Start Time:           Sun, 07 Dec 2025 09:16:05 +0530
-Labels:               k8s-app=calico-kube-controllers
-                      pod-template-hash=5766bdd7c
-Annotations:          cni.projectcalico.org/containerID: c4f7f0e0372e391f33e23e640bd6950c9bbef939199ae2f06f96944d39b000c2
-                      cni.projectcalico.org/podIP: 10.57.16.4/32
-                      cni.projectcalico.org/podIPs: 10.57.16.4/32
-Status:               Running
-SeccompProfile:       RuntimeDefault
-IP:                   10.57.16.4
-IPs:
-  IP:           10.57.16.4
-Controlled By:  ReplicaSet/calico-kube-controllers-5766bdd7c
-Containers:
-  calico-kube-controllers:
-    Container ID:   containerd://a9343427ac2548df318032ce01a766789ba447eb4901e2aa9506ab620844f240
-    Image:          quay.io/calico/kube-controllers:v3.31.0
-    Image ID:       quay.io/calico/kube-controllers@sha256:1d3ff1cbb6dc8b0ed4736e92923b0b111705f48803f77a3e5bc54c5b00149e8c
-    Port:           <none>
-    Host Port:      <none>
-    State:          Running
-      Started:      Sun, 07 Dec 2025 09:16:26 +0530
-    Ready:          True
-    Restart Count:  0
-    Liveness:       exec [/usr/bin/check-status -l] delay=10s timeout=10s period=10s #success=1 #failure=6
-    Readiness:      exec [/usr/bin/check-status -r] delay=0s timeout=1s period=10s #success=1 #failure=3
-    Environment:
-      ENABLED_CONTROLLERS:  node,loadbalancer
-      DATASTORE_TYPE:       kubernetes
-    Mounts:
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-4mc6c (ro)
-Conditions:
-  Type                        Status
-  PodReadyToStartContainers   True
-  Initialized                 True
-  Ready                       True
-  ContainersReady             True
-  PodScheduled                True
-Volumes:
-  kube-api-access-4mc6c:
-    Type:                    Projected (a volume that contains injected data from multiple sources)
-    TokenExpirationSeconds:  3607
-    ConfigMapName:           kube-root-ca.crt
-    Optional:                false
-    DownwardAPI:             true
-QoS Class:                   BestEffort
-Node-Selectors:              kubernetes.io/os=linux
-Tolerations:                 CriticalAddonsOnly op=Exists
-                             node-role.kubernetes.io/control-plane:NoSchedule
-                             node-role.kubernetes.io/master:NoSchedule
-                             node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
-                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
-Events:
-  Type     Reason                  Age                From               Message
-  ----     ------                  ----               ----               -------
-  Warning  FailedScheduling        34s                default-scheduler  0/1 nodes are available: 1 node(s) had untolerated taint(s). no new claims to deallocate, preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.
-  Normal   Scheduled               24s                default-scheduler  Successfully assigned kube-system/calico-kube-controllers-5766bdd7c-8vk6s to eqvlwso2apsit15
-  Warning  FailedCreatePodSandBox  23s                kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "bd50029e75a40ffefa2904abe53ab51f11660dd3e64b086c586774c5cda6e974": plugin type="calico" failed (add): stat /var/lib/calico/nodename: no such file or directory: check that the calico/node container is running and has mounted /var/lib/calico/
-  Warning  FailedCreatePodSandBox  23s                kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "69605a2cb924622085b6df70ce4b7f0101e9564fa38d7d52e59dcdf2980f8bcb": plugin type="calico" failed (add): stat /var/lib/calico/nodename: no such file or directory: check that the calico/node container is running and has mounted /var/lib/calico/
-  Warning  FailedCreatePodSandBox  22s                kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "e3e695d1950917e598325419ee9c2a2e961c5ce24af61664a709bf7beabfd2ae": plugin type="calico" failed (add): stat /var/lib/calico/nodename: no such file or directory: check that the calico/node container is running and has mounted /var/lib/calico/
-  Warning  FailedCreatePodSandBox  21s                kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "4236b2fe396cf5b3781b2987870adf591c5df67c78aac96855db6856143f66d8": plugin type="calico" failed (add): stat /var/lib/calico/nodename: no such file or directory: check that the calico/node container is running and has mounted /var/lib/calico/
-  Warning  FailedCreatePodSandBox  20s                kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "5ca607e7903413e9e01e27b9c235c0783d4a50d7e47a3bc670b21d6a95320cb8": plugin type="calico" failed (add): stat /var/lib/calico/nodename: no such file or directory: check that the calico/node container is running and has mounted /var/lib/calico/
-  Warning  FailedCreatePodSandBox  19s                kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "5037df1a94b41746b93bc2777bdab0b1568259dd774cac31571bdc9a516f218c": plugin type="calico" failed (add): stat /var/lib/calico/nodename: no such file or directory: check that the calico/node container is running and has mounted /var/lib/calico/
-  Warning  FailedCreatePodSandBox  18s                kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "3e44a59b533ae7559e07ee4780f09d7b726b8095b514084009af1c7d631b41d3": plugin type="calico" failed (add): stat /var/lib/calico/nodename: no such file or directory: check that the calico/node container is running and has mounted /var/lib/calico/
-  Warning  FailedCreatePodSandBox  17s                kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "f24a7ab122d8c67cf6168f01d316c9af53a981c58803f916ebe854461f94faa3": plugin type="calico" failed (add): stat /var/lib/calico/nodename: no such file or directory: check that the calico/node container is running and has mounted /var/lib/calico/
-  Warning  FailedCreatePodSandBox  16s                kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "f22cff1474d0396b25279e8c04c9d4305bc37fe5457cc09b859e92cb43e65cfb": plugin type="calico" failed (add): stat /var/lib/calico/nodename: no such file or directory: check that the calico/node container is running and has mounted /var/lib/calico/
-  Warning  FailedCreatePodSandBox  10s (x5 over 14s)  kubelet            (combined from similar events): Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "7f10e61ed2969e2375ab45ca92f7b3649fc21089526efca89c8e9403bca23305": plugin type="calico" failed (add): error adding host side routes for interface: cali7fe1acd30df, error: route (Ifindex: 31, Dst: 10.57.16.2/32, Scope: link) already exists for an interface other than 'cali7fe1acd30df': route (Ifindex: 26, Dst: 10.57.16.2/32, Scope: link, Iface: cali7dfce3d62a5)
-  Normal   SandboxChanged          9s (x14 over 23s)  kubelet            Pod sandbox changed, it will be killed and re-created.
-  Normal   Pulling                 9s                 kubelet            Pulling image "quay.io/calico/kube-controllers:v3.31.0"
-  Normal   Pulled                  3s                 kubelet            Successfully pulled image "quay.io/calico/kube-controllers:v3.31.0" in 6.582s (6.582s including waiting). Image size: 53896736 bytes.
-  Normal   Created                 3s                 kubelet            Created container: calico-kube-controllers
-  Normal   Started                 3s                 kubelet            Started container calico-kube-controllers
+Nice — the events give us a clear error chain:
+
+* The Calico **kube-controllers** pod is running and assigned a pod IP (so the API/datastore side is fine).
+* The **calico-node** daemonset is stuck in `Init:2/3` and kubelet is failing to create pod sandboxes with the calico CNI.
+* Key error from the kubelet events:
+
+  ```
+  plugin type="calico" failed (add): stat /var/lib/calico/nodename: no such file or directory: check that the calico/node container is running and has mounted /var/lib/calico/
+  ```
+
+  and later:
+
+  ```
+  error: route ... already exists for an interface other than 'caliXXXXX': route ... already exists
+  ```
+
+So Calico’s node component hasn’t created the on-disk state it expects, and there are stale cali* interfaces / routes conflicting with new sandbox setup. Below is a safe, ordered runbook you can execute now to bring the node to Ready.
+
+---
+
+## Safety first (read this)
+
+* These commands are intended for a single-node cluster you’re actively debugging. If this is production, **back up** before making changes and run commands during a maintenance window.
+* Don’t remove `/sys/fs/cgroup` or other kernel-managed paths.
+
+---
+
+## Step A — Inspect calico-node init failures (do this first)
+
+Get exact init container status and logs:
+
+```bash
+kubectl -n kube-system describe pod calico-node-ft82g
+kubectl -n kube-system get pods -n kube-system -o wide | grep calico-node
+# View logs for the init containers (list container names with describe if needed)
+kubectl -n kube-system logs calico-node-ft82g -c install-cni         # typical init container name
+kubectl -n kube-system logs calico-node-ft82g -c node                # main container
+# if other init containers exist, run logs for each
+```
+
+Read the logs. If they show permissions, mount, or missing-file errors, proceed to the host checks below.
+
+---
+
+## Step B — Ensure host directories and mounts exist and are writable
+
+Calico expects `/var/lib/calico` (and CNI paths) to be available on the host and mounted into the pod via hostPath.
+
+On the host (root):
+
+```bash
+# confirm directory exists and ownership/perm
+sudo ls -la /var/lib/calico
+sudo stat /var/lib/calico || echo "missing"
+
+# create if missing (safe)
+sudo mkdir -p /var/lib/calico
+sudo chown root:root /var/lib/calico
+sudo chmod 755 /var/lib/calico
+
+# check CNI directories
+ls -la /etc/cni/net.d || sudo mkdir -p /etc/cni/net.d
+ls -la /opt/cni/bin || sudo mkdir -p /opt/cni/bin
+sudo chown -R root:root /etc/cni /opt/cni
+```
+
+Why: the error `stat /var/lib/calico/nodename: no such file or directory` means the calico `node` container cannot create/read that file in the mounted hostPath. Creating the directory prevents hostPath mount failures.
+
+---
+
+## Step C — Check the calico-node DaemonSet spec for hostPath mount correctness
+
+```bash
+kubectl -n kube-system get ds calico-node -o yaml | sed -n '1,240p'
+```
+
+Look for a volume like:
+
+```yaml
+volumes:
+- name: varlibcalico
+  hostPath:
+    path: /var/lib/calico
+    type: DirectoryOrCreate
+```
+
+If `type` is missing or different, or `path` is wrong, edit the manifest to point to `/var/lib/calico` with `DirectoryOrCreate` and re-apply.
+
+If you change it:
+
+```bash
+kubectl -n kube-system delete pod -l k8s-app=calico-node
+```
+
+---
+
+## Step D — Check / fix leftover cali* interfaces & duplicate routes
+
+`route ... already exists for an interface other than 'cali...'` indicates stale veth/cali interfaces from previous failed sandboxes. Safely remove stale cali* interfaces on the host **only if they are not used by running containers**.
+
+1. List cali interfaces and routes:
+
+```bash
+ip -o link | awk -F': ' '{print $2}' | grep '^cali' || true
+ip route show table main | grep 10.57.16. || true
+```
+
+2. If you see cali interfaces, verify which PIDs/containers own them:
+
+```bash
+# show which network namespace links exist
+for i in $(ip -o link | awk -F': ' '{print $2}' | grep '^cali' || true); do
+  echo "---- $i ----"
+  ip -d link show $i
+done
+```
+
+3. If the cali interfaces are stale (no corresponding container/sandbox), delete them:
+
+```bash
+# delete a specific stale interface
+sudo ip link delete cali7fe1acd30df || true
+# or loop-delete all cali interfaces (careful!)
+for iface in $(ip -o link | awk -F': ' '{print $2}' | grep '^cali' || true); do
+  echo "Deleting $iface"
+  sudo ip link delete $iface || true
+done
+```
+
+If `ip link delete` returns "Device or resource busy", the interface is still in use — stop and inspect the container using it before deletion.
+
+4. Remove conflicting route if needed:
+
+```bash
+# show conflicting route(s)
+ip route show | grep "10.57.16"
+# delete a specific stale route (example)
+sudo ip route del 10.57.16.2/32 dev cali7dfce3d62a5 || true
+```
+
+---
+
+## Step E — Ensure CNI plugin binaries exist
+
+Calico's install-cni init container typically populates `/opt/cni/bin`. If that failed, create the directory and allow Calico to install plugins.
+
+```bash
+ls -la /opt/cni/bin
+# if empty, make sure directory is writeable:
+sudo mkdir -p /opt/cni/bin
+sudo chown root:root /opt/cni/bin
+sudo chmod 755 /opt/cni/bin
+```
+
+If you are air-gapped, you may need to pre-populate CNI plug-ins; otherwise Calico init container should do it.
+
+---
+
+## Step F — Delete/recreate calico-node pods so they re-run init cleanly
+
+After ensuring directories and cleaning stale network interfaces, force the calico-node daemonset pods to be recreated:
+
+```bash
+kubectl -n kube-system delete pod -l k8s-app=calico-node
+kubectl -n kube-system get pods -w
+```
+
+Watch the init containers. If they still fail, immediately check the pod logs (init & main) for the failing init:
+
+```bash
+kubectl -n kube-system logs <calico-node-pod-name> -c install-cni
+kubectl -n kube-system logs <calico-node-pod-name> -c node
+```
+
+---
+
+## Step G — Verify CNI config and kubelet behavior
+
+Once calico-node pods are Running/Ready:
+
+1. Inspect CNI config files on host:
+
+```bash
+sudo ls -la /etc/cni/net.d
+sudo cat /etc/cni/net.d/*calico*.conf
+```
+
+2. Ensure `kubectl get nodes` shows node Ready:
+
+```bash
+kubectl get nodes
+kubectl -n kube-system get pods
+```
+
+3. If pods still fail to create sandboxes, check kubelet logs for plugin errors:
+
+```bash
+sudo journalctl -u kubelet -n 200 --no-pager
+```
+
+---
+
+## Quick checklist (summary)
+
+* [ ] `/var/lib/calico` exists and is mountable by DaemonSet (hostPath DirectoryOrCreate)
+* [ ] `/opt/cni/bin` exists (CNI plugins present or install-cni can write there)
+* [ ] No stale `cali*` interfaces or duplicate routes (delete stale ones)
+* [ ] Recreate calico-node pods after host fixes
+* [ ] Confirm calico-node main container writes `/var/lib/calico/nodename`
+* [ ] Coredns pods should then go from ContainerCreating → Running
+
+---
+
+## If it’s still not fixed — paste these outputs and I’ll parse them immediately
+
+Do these commands and paste results (copy-paste — no need to confirm first):
+
+```bash
+kubectl -n kube-system get pods -o wide
+kubectl -n kube-system describe pod <calico-node-pod-name> -n kube-system
+kubectl -n kube-system logs <calico-node-pod-name> -c install-cni
+kubectl -n kube-system logs <calico-node-pod-name> -c node
+sudo ls -la /var/lib/calico /etc/cni/net.d /opt/cni/bin
+ip -o link | awk -F': ' '{print $2}' | grep '^cali' || true
+ip route show | sed -n '1,200p' | grep 10.57.16 -n || true
+sudo journalctl -u kubelet -n 200 --no-pager
+```
+
+If you paste the outputs I’ll point to the exact failing line and the minimal command to finish the fix.
