@@ -1,78 +1,66 @@
-NAME                                         READY   STATUS    RESTARTS   AGE
-dashboard-metrics-scraper-5ffb7d645f-f45wq   1/1     Running   0          28s
-kubernetes-dashboard-6c7b75ffc-4bchv         1/1     Running   0          28s
-[root@EQVLWSO2APSIT15 script-files]# kubectl proxy
-Starting to serve on 127.0.0.1:8001
-^C
-[root@EQVLWSO2APSIT15 script-files]# kubectl proxy
-Starting to serve on 127.0.0.1:8001
-^C
-[root@EQVLWSO2APSIT15 script-files]# kubectl get po -n kubernetes-dashboard
-NAME                                         READY   STATUS    RESTARTS   AGE
-dashboard-metrics-scraper-5ffb7d645f-f45wq   1/1     Running   0          4m28s
-kubernetes-dashboard-6c7b75ffc-4bchv         1/1     Running   0          4m28s
-[root@EQVLWSO2APSIT15 script-files]# kubectl logs -f dashboard-metrics-scraper-5ffb7d645f-f45wq -n kubernetes-dashboard
-W1207 06:49:01.035232       1 client_config.go:617] Neither --kubeconfig nor --master was specified.  Using the inClusterConfig.  This might not work.
-{"level":"info","msg":"Kubernetes host: https://10.96.0.1:443","time":"2025-12-07T06:49:01Z"}
-{"level":"info","msg":"Namespace(s): []","time":"2025-12-07T06:49:01Z"}
-10.57.16.0 - - [07/Dec/2025:06:49:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.16.0 - - [07/Dec/2025:06:49:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:49:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:49:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:49:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:50:01Z"}
-10.57.16.0 - - [07/Dec/2025:06:50:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:50:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:50:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:50:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.16.0 - - [07/Dec/2025:06:50:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:50:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:50:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:50:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:51:01Z"}
-10.57.16.0 - - [07/Dec/2025:06:51:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:51:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:51:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:51:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.16.0 - - [07/Dec/2025:06:51:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:51:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:51:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:51:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:52:01Z"}
-10.57.16.0 - - [07/Dec/2025:06:52:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:52:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:52:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:52:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.16.0 - - [07/Dec/2025:06:52:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:52:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:52:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:52:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:53:01Z"}
-10.57.16.0 - - [07/Dec/2025:06:53:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:53:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:53:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:53:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.16.0 - - [07/Dec/2025:06:53:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:53:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-^C[root@EQVLWSO2APSIT15 script-files]# kubectget powq -n kubernetes-dashboard
-NAME                                         READY   STATUS    RESTARTS   AGE
-dashboard-metrics-scraper-5ffb7d645f-f45wq   1/1     Running   0          4m45s
-kubernetes-dashboard-6c7b75ffc-4bchv         1/1     Running   0          4m45s
-[root@EQVLWSO2APSIT15 script-files]# kubectl logs -f kubernetes-dashboard-6c7b75ffc-4bchv -n kubernetes-dashboard
-2025/12/07 06:49:04 Starting overwatch
-2025/12/07 06:49:04 Using namespace: kubernetes-dashboard
-2025/12/07 06:49:04 Using in-cluster config to connect to apiserver
-2025/12/07 06:49:04 Using secret token for csrf signing
-2025/12/07 06:49:04 Initializing csrf token from kubernetes-dashboard-csrf secret
-2025/12/07 06:49:04 Empty token. Generating and storing in a secret kubernetes-dashboard-csrf
-2025/12/07 06:49:04 Successful initial request to the apiserver, version: v1.34.2
-2025/12/07 06:49:04 Generating JWE encryption key
-2025/12/07 06:49:04 New synchronizer has been registered: kubernetes-dashboard-key-holder-kubernetes-dashboard. Starting
-2025/12/07 06:49:04 Starting secret synchronizer for kubernetes-dashboard-key-holder in namespace kubernetes-dashboard
-2025/12/07 06:49:04 Initializing JWE encryption key from synchronized object
-2025/12/07 06:49:04 Creating in-cluster Sidecar client
-2025/12/07 06:49:04 Auto-generating certificates
-2025/12/07 06:49:04 Successfully created certificates
-2025/12/07 06:49:04 Successful request to sidecar
-2025/12/07 06:49:04 Serving securely on HTTPS port: 8443
-^C[root@EQVLWSO2APSIT15 script-files]#
+Great — since your **Kubernetes master node is 10.57.10.129**, and you are running `kubectl proxy` **on that server**, you **cannot** access `http://localhost:8001` from your laptop.
+It only listens on **127.0.0.1 inside the server**, not on your laptop.
+
+So you must use **port-forwarding** to access the Dashboard UI.
+
+Below is the **correct and easiest method** for your setup.
+
+---
+
+# ✅ **BEST METHOD: Port-forward directly to the Dashboard service**
+
+Run this on your master node (10.57.10.129):
+
+```bash
+kubectl port-forward -n kubernetes-dashboard svc/kubernetes-dashboard 8443:443
+```
+
+You will see:
+
+```
+Forwarding from 127.0.0.1:8443 -> 8443
+```
+
+Now **on your laptop**, open this URL:
+
+```
+https://10.57.10.129:8443
+```
+
+👉 **It MUST be https, not http**
+👉 Your browser will show a certificate warning → Click **Proceed / Continue**.
+
+---
+
+# 🔐 **Login to Dashboard**
+
+If you have not created a user:
+
+Create admin-user:
+
+```bash
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/docs/user/access-control/creating-sample-user.yaml
+```
+
+Get token:
+
+```bash
+kubectl -n kubernetes-dashboard create token admin-user
+```
+
+Copy & paste the token into the Dashboard login screen.
+
+---
+
+# 🎉 **After login, you will see Pod metrics UI**
+
+On left side:
+
+✔ **Cluster → Nodes** → CPU/Memory graphs
+✔ **Workloads → Pods** → per-pod CPU/Memory (from metrics-server)
+
+Since your metrics-server is running correctly, metrics will display.
+
+---
+
+# ❓ Want me to generate the exact token and YAML for your dashboard user?
