@@ -1,163 +1,189 @@
-You're seeing a classic single-node / fresh-cluster problem: the node is `NotReady` because the CNI never finished initializing (`NetworkPluginNotReady: cni plugin not initialized`), Calico pods are `Init:Error` / `Pending`, and that prevents control-plane/user pods (like CoreDNS) from scheduling. Below I give a focused, ordered troubleshooting + fix runbook you can execute now (commands + why) and links to further reading.
-
----
-
-# TL;DR (what will fix it 95% of the time)
-
-1. Install / fix the CNI (Calico) properly (apply the correct Calico manifest or operator for your Kubernetes version). Calico v3.31+ is tested with K8s 1.34. ([docs.tigera.io][1])
-2. Make sure node can pull images and the container runtime is healthy (containerd). Check `crictl`/`journalctl`/`kubectl logs` to find why calico init container failed. Common causes: missing kernel module `br_netfilter`, `net.bridge.bridge-nf_call_iptables` not set, CNI binaries absent in `/opt/cni/bin`, or image-pull/network/proxy problems. ([Stack Overflow][2])
-
----
-
-# Step-by-step (run these on the node / cluster control plane)
-
-## 1) Quick view (what’s failing)
-
-```bash
-kubectl get pods -n kube-system -o wide
-kubectl get nodes -o wide
-```
-
-## 2) Inspect the calico pod that is `Init:Error`
-
-Replace the pod name with the actual pod name you have:
-
-```bash
-kubectl -n kube-system describe pod calico-node-mtpg8
-kubectl -n kube-system logs calico-node-mtpg8 -c calico-node      # main container
-kubectl -n kube-system logs calico-node-mtpg8 -c calico-node -p   # previous, if restarted
-kubectl -n kube-system logs calico-kube-controllers-6ffb5df975-fqfvt
-```
-
-Look for errors like missing files, permission denied, failed to create interface, or image-pull errors. If logs show “No networks found in /etc/cni/net.d” or similar, the CNI config was never written. ([Stack Overflow][2])
-
-## 3) Check container runtime & CNI filesystem
-
-```bash
-# containerd status
-sudo systemctl status containerd
-sudo journalctl -u containerd --no-pager -n 200
-
-# kubelet logs (why it reports NetworkPluginNotReady)
-sudo journalctl -u kubelet --no-pager -n 200
-
-# show CNI config and plugin locations
-ls -la /etc/cni/net.d
-ls -la /opt/cni/bin
-```
-
-If `/opt/cni/bin` is empty or missing the plugins, CNI won't initialize. If there are image-pull errors in calico logs, ensure network/proxy/registry access.
-
-## 4) Kernel / sysctl checks (very common cause)
-
-Calico (and other CNIs) expects bridged traffic to be visible to iptables. On many systems you must enable br_netfilter and set net.bridge.* sysctls:
-
-```bash
-# quick check/apply (temporary)
-sudo modprobe br_netfilter
-sudo sysctl -w net.bridge.bridge-nf_call_iptables=1
-sudo sysctl -w net.bridge.bridge-nf_call_ip6tables=1
-
-# make persistent
-echo 'br_netfilter' | sudo tee /etc/modules-load.d/br_netfilter.conf
-cat <<EOF | sudo tee /etc/sysctl.d/99-k8s.conf
-net.bridge.bridge-nf-call-iptables  = 1
-net.bridge.bridge-nf-call-ip6tables = 1
-EOF
-sudo sysctl --system
-```
-
-If `modprobe br_netfilter` fails or sysctl doesn't exist, that explains CNI errors. ([Kubernetes][3])
-
-## 5) If CNI not installed or corrupt — (re)install Calico
-
-Use the official Calico quickstart / manifest. For kubeadm/self-managed, Project Calico provides a manifest/installer. Example:
-
-```bash
-# recommended: use the official URL from Tigera
-kubectl apply -f https://docs.tigera.io/calico/latest/manifests/calico.yaml
-```
-
-(Or install using the tigera-operator / Helm; choose the method you prefer.) Calico releases have compatibility information; Calico v3.31 supports K8s 1.34 (so pick a tested release). After apply, watch the calico pods start:
-
-```bash
-kubectl -n kube-system rollout status daemonset/calico-node
-kubectl -n kube-system get pods -w
-```
-
-If the node still shows `NetworkPluginNotReady`, check calico-node logs again. ([docs.tigera.io][1])
-
-> Note: If you're on an airgapped/private registry environment you must edit the manifest to point images to your registry.
-
-## 6) Check image pulls / networking / proxies
-
-If calico init fails pulling images, fix credentials/proxy or preload images:
-
-```bash
-# see events for image pull
-kubectl -n kube-system describe pod calico-node-mtpg8 | sed -n '/Events:/,$p'
-
-# or on the host, test Docker/Containerd can pull
-sudo ctr images pull docker.io/calico/node:<tag>   # or use crictl with your runtime
-```
-
-## 7) `invalid capacity 0 on image filesystem` warnings (non-blocking)
-
-You have events `InvalidDiskCapacity invalid capacity 0 on image filesystem`. These are usually warnings logged early at kubelet startup and often harmless; they can often be ignored unless you see disk-related failures. You can search/monitor but they usually don't prevent CNI initialization. ([GitHub][4])
-
-## 8) Optional: Allow scheduling on control-plane (if you want single-node cluster to run system pods)
-
-If you intentionally want system pods scheduled on the control-plane (single-node clusters often do), remove the control-plane taint so regular pods can run there (but Calico/CoreDNS should be tolerating it anyway). To remove:
-
-```bash
-kubectl taint nodes eqvlwso2apsit15 node-role.kubernetes.io/control-plane:NoSchedule-
-# or remove for all nodes:
-kubectl taint nodes --all node-role.kubernetes.io/control-plane:NoSchedule-
-```
-
-Use this only if you understand scheduling implications.
-
----
-
-# Typical root causes I see from your output
-
-* Calico CNI was not successfully installed or its init container errored → kubelet reports network plugin not initialized and node becomes NotReady. (Fix: install Calico correctly and inspect calico-node logs.) ([docs.tigera.io][1])
-* br_netfilter/sysctl not enabled → CNI cannot program iptables rules / network interface → Calico fails. (Fix: `modprobe br_netfilter` + sysctl.) ([Kubernetes][3])
-* Image pull / proxy / registry issues or missing CNI binaries in `/opt/cni/bin`. (Fix: make images accessible or preload images and ensure manifest points to correct images.)
-* `InvalidDiskCapacity` messages are mostly warnings and not the immediate cause. ([GitHub][4])
-
----
-
-# If you want, run these commands now and paste the outputs
-
-(you already provided helpful dumps — next helpful outputs:)
-
-```bash
-kubectl -n kube-system get pods -o wide
-kubectl -n kube-system describe pod calico-node-mtpg8
-kubectl -n kube-system logs calico-node-mtpg8 -c calico-node
-sudo journalctl -u kubelet -n 200 --no-pager
-ls -la /opt/cni/bin /etc/cni/net.d
-sudo systemctl status containerd
-```
-
-If you paste the `calico-node` logs and `kubelet` journal lines that show the error, I will read them and tell you the exact error and the next action. (If you prefer, apply the Calico manifest first with `kubectl apply -f https://docs.tigera.io/calico/latest/manifests/calico.yaml` and then paste the logs if anything still fails.)
-
----
-
-# References / reading
-
-* Calico quickstart and manifests (install instructions & compatibility). ([docs.tigera.io][1])
-* Calico compatibility (Calico v3.31 tested against K8s 1.34). ([docs.tigera.io][5])
-* Common CNI “No networks found in /etc/cni/net.d” / `cni plugin not initialized` troubleshooting. ([Stack Overflow][2])
-* `invalid capacity 0 on image filesystem` explanation / common harmless warning. ([GitHub][4])
-
----
-
-If you want, paste the `calico-node` logs and `kubelet` journal output you get after trying the sysctl + reapply steps and I’ll point to the exact failing line and the precise fix.
-
-[1]: https://docs.tigera.io/calico/latest/getting-started/kubernetes/quickstart?utm_source=chatgpt.com "Calico quickstart guide"
-[2]: https://stackoverflow.com/questions/49112336/container-runtime-network-not-ready-cni-config-uninitialized?utm_source=chatgpt.com "Container runtime network not ready: cni config uninitialized"
-[3]: https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/?utm_source=chatgpt.com "Network Plugins"
-[4]: https://github.com/k3s-io/k3s/issues/1857?utm_source=chatgpt.com "invalid capacity 0 on image filesystem warning when ..."
-[5]: https://docs.tigera.io/calico/latest/getting-started/kubernetes/requirements?utm_source=chatgpt.com "System requirements for Kubernetes - Calico Documentation"
+[root@EQVLWSO2APSIT15 script-files]# kubectl port-forward -n kubernetes-dashboard svc/kubernetes-dashboard 8443:443
+Forwarding from 127.0.0.1:8443 -> 8443
+^C[root@EQVLWSO2APSIT15 script-files]# kubectget po -n kubernetes-dashboard
+NAME                                         READY   STATUS    RESTARTS   AGE
+dashboard-metrics-scraper-5ffb7d645f-f45wq   1/1     Running   0          8m50s
+kubernetes-dashboard-6c7b75ffc-4bchv         1/1     Running   0          8m50s
+[root@EQVLWSO2APSIT15 script-files]# kubectl logs -f dashboard-metrics-scraper-5ffb7d645f-f45wq -n kubernetes-dashboard
+W1207 06:49:01.035232       1 client_config.go:617] Neither --kubeconfig nor --master was specified.  Using the inClusterConfig.  This might not work.
+{"level":"info","msg":"Kubernetes host: https://10.96.0.1:443","time":"2025-12-07T06:49:01Z"}
+{"level":"info","msg":"Namespace(s): []","time":"2025-12-07T06:49:01Z"}
+10.57.16.0 - - [07/Dec/2025:06:49:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.16.0 - - [07/Dec/2025:06:49:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:49:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:49:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:49:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:50:01Z"}
+10.57.16.0 - - [07/Dec/2025:06:50:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:50:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:50:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:50:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.16.0 - - [07/Dec/2025:06:50:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:50:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:50:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:50:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:51:01Z"}
+10.57.16.0 - - [07/Dec/2025:06:51:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:51:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:51:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:51:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.16.0 - - [07/Dec/2025:06:51:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:51:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:51:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:51:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:52:01Z"}
+10.57.16.0 - - [07/Dec/2025:06:52:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:52:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:52:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:52:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.16.0 - - [07/Dec/2025:06:52:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:52:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:52:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:52:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:53:01Z"}
+10.57.16.0 - - [07/Dec/2025:06:53:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:53:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:53:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:53:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.16.0 - - [07/Dec/2025:06:53:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:53:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:53:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:53:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:54:01Z"}
+10.57.16.0 - - [07/Dec/2025:06:54:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:54:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:54:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:54:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.16.0 - - [07/Dec/2025:06:54:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:54:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:54:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:54:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:55:01Z"}
+10.57.16.0 - - [07/Dec/2025:06:55:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:55:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:55:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:55:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.16.0 - - [07/Dec/2025:06:55:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:55:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:55:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:55:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:56:01Z"}
+10.57.16.0 - - [07/Dec/2025:06:56:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:56:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:56:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:56:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.16.0 - - [07/Dec/2025:06:56:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:56:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:56:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:56:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:57:01Z"}
+10.57.16.0 - - [07/Dec/2025:06:57:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:57:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:57:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:57:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.16.0 - - [07/Dec/2025:06:57:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:57:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:57:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+^C[root@EQVLWSO2APSIT15 script-files]# kubectlogs -f dashboard-metrics-scraper-5ffb7d645f-f45wq -n kubernetes-dashboard
+W1207 06:49:01.035232       1 client_config.go:617] Neither --kubeconfig nor --master was specified.  Using the inClusterConfig.  This might not work.
+{"level":"info","msg":"Kubernetes host: https://10.96.0.1:443","time":"2025-12-07T06:49:01Z"}
+{"level":"info","msg":"Namespace(s): []","time":"2025-12-07T06:49:01Z"}
+10.57.16.0 - - [07/Dec/2025:06:49:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.16.0 - - [07/Dec/2025:06:49:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:49:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:49:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:49:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:50:01Z"}
+10.57.16.0 - - [07/Dec/2025:06:50:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:50:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:50:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:50:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.16.0 - - [07/Dec/2025:06:50:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:50:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:50:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:50:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:51:01Z"}
+10.57.16.0 - - [07/Dec/2025:06:51:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:51:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:51:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:51:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.16.0 - - [07/Dec/2025:06:51:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:51:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:51:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:51:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:52:01Z"}
+10.57.16.0 - - [07/Dec/2025:06:52:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:52:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:52:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:52:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.16.0 - - [07/Dec/2025:06:52:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:52:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:52:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:52:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:53:01Z"}
+10.57.16.0 - - [07/Dec/2025:06:53:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:53:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:53:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:53:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.16.0 - - [07/Dec/2025:06:53:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:53:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:53:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:53:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:54:01Z"}
+10.57.16.0 - - [07/Dec/2025:06:54:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:54:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:54:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:54:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.16.0 - - [07/Dec/2025:06:54:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:54:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:54:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:54:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:55:01Z"}
+10.57.16.0 - - [07/Dec/2025:06:55:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:55:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:55:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:55:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.16.0 - - [07/Dec/2025:06:55:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:55:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:55:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:55:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:56:01Z"}
+10.57.16.0 - - [07/Dec/2025:06:56:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:56:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:56:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:56:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.16.0 - - [07/Dec/2025:06:56:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:56:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:56:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:56:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:57:01Z"}
+10.57.16.0 - - [07/Dec/2025:06:57:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:57:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:57:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:57:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.16.0 - - [07/Dec/2025:06:57:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:57:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:57:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:57:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:58:01Z"}
+10.57.16.0 - - [07/Dec/2025:06:58:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
+10.57.12.111 - - [07/Dec/2025:06:58:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+10.57.12.111 - - [07/Dec/2025:06:58:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
+^C[root@EQVLWSO2APSIT15 script-files]# kubectlogs -f kubernetes-dashboard-6c7b75ffc-4bchv -n kubernetes-dashboard
+2025/12/07 06:49:04 Starting overwatch
+2025/12/07 06:49:04 Using namespace: kubernetes-dashboard
+2025/12/07 06:49:04 Using in-cluster config to connect to apiserver
+2025/12/07 06:49:04 Using secret token for csrf signing
+2025/12/07 06:49:04 Initializing csrf token from kubernetes-dashboard-csrf secret
+2025/12/07 06:49:04 Empty token. Generating and storing in a secret kubernetes-dashboard-csrf
+2025/12/07 06:49:04 Successful initial request to the apiserver, version: v1.34.2
+2025/12/07 06:49:04 Generating JWE encryption key
+2025/12/07 06:49:04 New synchronizer has been registered: kubernetes-dashboard-key-holder-kubernetes-dashboard. Starting
+2025/12/07 06:49:04 Starting secret synchronizer for kubernetes-dashboard-key-holder in namespace kubernetes-dashboard
+2025/12/07 06:49:04 Initializing JWE encryption key from synchronized object
+2025/12/07 06:49:04 Creating in-cluster Sidecar client
+2025/12/07 06:49:04 Auto-generating certificates
+2025/12/07 06:49:04 Successfully created certificates
+2025/12/07 06:49:04 Successful request to sidecar
+2025/12/07 06:49:04 Serving securely on HTTPS port: 8443
+^C[root@EQVLWSO2APSIT15 script-files]#
