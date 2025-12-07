@@ -1,169 +1,89 @@
-Got it — this explains **why your Kubernetes node stays NotReady** and **Calico cannot initialize**.
-
-You are running:
-
-```
-containerd v2.2.0
-```
-
-But **Kubernetes v1.34.x requires containerd >= 1.7.x** (and 2.x is *not yet supported* by kubelet).
-
-Because of this mismatch:
-
-✔ kubelet cannot talk to containerd
-✔ CNI (Calico) init container fails
-✔ Node reports:
-
-```
-NetworkPluginNotReady: cni plugin not initialized
-```
-
-**→ This is the root cause.**
-
----
-
-# ✅ **You MUST install a supported containerd version**
-
-For **Kubernetes 1.29–1.34**, the supported versions are:
-
-| Kubernetes Version | Supported containerd             |
-| ------------------ | -------------------------------- |
-| 1.29 – 1.34        | **1.6.x / 1.7.x** (prefer 1.7.x) |
-
-📌 **containerd 2.x is NOT supported by Kubernetes yet.**
-
----
-
-# 🔧 **Fix = uninstall containerd 2.2.0 and install containerd 1.7.x**
-
-### 1. Remove existing containerd
-
-```bash
-sudo systemctl stop containerd
-sudo dnf remove -y containerd.io
-```
-
-### 2. Install containerd 1.7 (recommended for K8s 1.34)
-
-Official RPM (Oracle Linux 9 / RHEL9 compatible):
-
-```bash
-sudo dnf install -y \
- https://download.docker.com/linux/rhel/9/x86_64/stable/Packages/containerd.io-1.7.17-3.1.el9.x86_64.rpm
-```
-
-Verify:
-
-```bash
-containerd --version
-```
-
-You should see something like:
-
-```
-containerd containerd.io 1.7.17
-```
-
----
-
-# 3. Configure containerd for Kubernetes
-
-```bash
-sudo mkdir -p /etc/containerd
-containerd config default | sudo tee /etc/containerd/config.toml
-```
-
-Modify config so that systemd cgroups are enabled:
-
-```bash
-sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
-```
-
-Restart:
-
-```bash
-sudo systemctl restart containerd
-sudo systemctl enable containerd
-```
-
----
-
-# 4. Restart kubelet
-
-```bash
-sudo systemctl restart kubelet
-```
-
-Within 30–60 sec:
-
-```bash
-kubectl get nodes
-```
-
-You should see:
-
-```
-eqvlwso2apsit15   Ready   control-plane   ...
-```
-
----
-
-# 5. Fix CNI (Calico) after containerd is fixed
-
-Reinstall Calico to ensure CNI config is correct:
-
-```bash
-kubectl delete -f https://docs.tigera.io/calico/latest/manifests/calico.yaml --ignore-not-found
-kubectl apply -f https://docs.tigera.io/calico/latest/manifests/calico.yaml
-```
-
-Then:
-
-```bash
-kubectl -n kube-system get pods -w
-```
-
-Calico should run normally.
-
----
-
-# 6. Install crictl (recommended)
-
-```bash
-VERSION="v1.30.0"
-wget https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/crictl-$VERSION-linux-amd64.tar.gz
-sudo tar zxvf crictl-$VERSION-linux-amd64.tar.gz -C /usr/local/bin
-```
-
-Create config:
-
-```bash
-sudo tee /etc/crictl.yaml <<EOF
-runtime-endpoint: unix:///run/containerd/containerd.sock
-EOF
-```
-
-Test:
-
-```bash
-crictl info
-```
-
----
-
-# 🎉 After doing the above:
-
-✔ Node becomes **Ready**
-✔ Calico initializes correctly
-✔ CoreDNS schedules
-✔ Cluster becomes fully functional
-
----
-
-# If you want — I can provide:
-
-✅ A complete reinstall script
-✅ A validated containerd version link for OL9
-✅ A hardened Kubernetes setup for Oracle Linux 9
-
-Just tell me.
+[root@EQVLWSO2APSIT15 images]# kubectl get po -n kube-system
+NAME                                      READY   STATUS              RESTARTS   AGE
+calico-kube-controllers-5766bdd7c-8vk6s   0/1     ContainerCreating   0          20s
+calico-node-ft82g                         0/1     Init:2/3            0          20s
+coredns-66bc5c9577-lvrl8                  0/1     ContainerCreating   0          70s
+coredns-66bc5c9577-wlk9w                  0/1     ContainerCreating   0          70s
+etcd-eqvlwso2apsit15                      1/1     Running             3          77s
+kube-apiserver-eqvlwso2apsit15            1/1     Running             3          77s
+kube-controller-manager-eqvlwso2apsit15   1/1     Running             3          77s
+kube-proxy-fzmn7                          1/1     Running             0          70s
+kube-scheduler-eqvlwso2apsit15            1/1     Running             3          77s
+[root@EQVLWSO2APSIT15 images]# kubectl describe pod calico-kube-controllers-5766bdd7c-8vk6s -n kube-system
+Name:                 calico-kube-controllers-5766bdd7c-8vk6s
+Namespace:            kube-system
+Priority:             2000000000
+Priority Class Name:  system-cluster-critical
+Service Account:      calico-kube-controllers
+Node:                 eqvlwso2apsit15/10.57.12.120
+Start Time:           Sun, 07 Dec 2025 09:16:05 +0530
+Labels:               k8s-app=calico-kube-controllers
+                      pod-template-hash=5766bdd7c
+Annotations:          cni.projectcalico.org/containerID: c4f7f0e0372e391f33e23e640bd6950c9bbef939199ae2f06f96944d39b000c2
+                      cni.projectcalico.org/podIP: 10.57.16.4/32
+                      cni.projectcalico.org/podIPs: 10.57.16.4/32
+Status:               Running
+SeccompProfile:       RuntimeDefault
+IP:                   10.57.16.4
+IPs:
+  IP:           10.57.16.4
+Controlled By:  ReplicaSet/calico-kube-controllers-5766bdd7c
+Containers:
+  calico-kube-controllers:
+    Container ID:   containerd://a9343427ac2548df318032ce01a766789ba447eb4901e2aa9506ab620844f240
+    Image:          quay.io/calico/kube-controllers:v3.31.0
+    Image ID:       quay.io/calico/kube-controllers@sha256:1d3ff1cbb6dc8b0ed4736e92923b0b111705f48803f77a3e5bc54c5b00149e8c
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Sun, 07 Dec 2025 09:16:26 +0530
+    Ready:          True
+    Restart Count:  0
+    Liveness:       exec [/usr/bin/check-status -l] delay=10s timeout=10s period=10s #success=1 #failure=6
+    Readiness:      exec [/usr/bin/check-status -r] delay=0s timeout=1s period=10s #success=1 #failure=3
+    Environment:
+      ENABLED_CONTROLLERS:  node,loadbalancer
+      DATASTORE_TYPE:       kubernetes
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-4mc6c (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True
+  Initialized                 True
+  Ready                       True
+  ContainersReady             True
+  PodScheduled                True
+Volumes:
+  kube-api-access-4mc6c:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              kubernetes.io/os=linux
+Tolerations:                 CriticalAddonsOnly op=Exists
+                             node-role.kubernetes.io/control-plane:NoSchedule
+                             node-role.kubernetes.io/master:NoSchedule
+                             node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason                  Age                From               Message
+  ----     ------                  ----               ----               -------
+  Warning  FailedScheduling        34s                default-scheduler  0/1 nodes are available: 1 node(s) had untolerated taint(s). no new claims to deallocate, preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.
+  Normal   Scheduled               24s                default-scheduler  Successfully assigned kube-system/calico-kube-controllers-5766bdd7c-8vk6s to eqvlwso2apsit15
+  Warning  FailedCreatePodSandBox  23s                kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "bd50029e75a40ffefa2904abe53ab51f11660dd3e64b086c586774c5cda6e974": plugin type="calico" failed (add): stat /var/lib/calico/nodename: no such file or directory: check that the calico/node container is running and has mounted /var/lib/calico/
+  Warning  FailedCreatePodSandBox  23s                kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "69605a2cb924622085b6df70ce4b7f0101e9564fa38d7d52e59dcdf2980f8bcb": plugin type="calico" failed (add): stat /var/lib/calico/nodename: no such file or directory: check that the calico/node container is running and has mounted /var/lib/calico/
+  Warning  FailedCreatePodSandBox  22s                kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "e3e695d1950917e598325419ee9c2a2e961c5ce24af61664a709bf7beabfd2ae": plugin type="calico" failed (add): stat /var/lib/calico/nodename: no such file or directory: check that the calico/node container is running and has mounted /var/lib/calico/
+  Warning  FailedCreatePodSandBox  21s                kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "4236b2fe396cf5b3781b2987870adf591c5df67c78aac96855db6856143f66d8": plugin type="calico" failed (add): stat /var/lib/calico/nodename: no such file or directory: check that the calico/node container is running and has mounted /var/lib/calico/
+  Warning  FailedCreatePodSandBox  20s                kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "5ca607e7903413e9e01e27b9c235c0783d4a50d7e47a3bc670b21d6a95320cb8": plugin type="calico" failed (add): stat /var/lib/calico/nodename: no such file or directory: check that the calico/node container is running and has mounted /var/lib/calico/
+  Warning  FailedCreatePodSandBox  19s                kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "5037df1a94b41746b93bc2777bdab0b1568259dd774cac31571bdc9a516f218c": plugin type="calico" failed (add): stat /var/lib/calico/nodename: no such file or directory: check that the calico/node container is running and has mounted /var/lib/calico/
+  Warning  FailedCreatePodSandBox  18s                kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "3e44a59b533ae7559e07ee4780f09d7b726b8095b514084009af1c7d631b41d3": plugin type="calico" failed (add): stat /var/lib/calico/nodename: no such file or directory: check that the calico/node container is running and has mounted /var/lib/calico/
+  Warning  FailedCreatePodSandBox  17s                kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "f24a7ab122d8c67cf6168f01d316c9af53a981c58803f916ebe854461f94faa3": plugin type="calico" failed (add): stat /var/lib/calico/nodename: no such file or directory: check that the calico/node container is running and has mounted /var/lib/calico/
+  Warning  FailedCreatePodSandBox  16s                kubelet            Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "f22cff1474d0396b25279e8c04c9d4305bc37fe5457cc09b859e92cb43e65cfb": plugin type="calico" failed (add): stat /var/lib/calico/nodename: no such file or directory: check that the calico/node container is running and has mounted /var/lib/calico/
+  Warning  FailedCreatePodSandBox  10s (x5 over 14s)  kubelet            (combined from similar events): Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "7f10e61ed2969e2375ab45ca92f7b3649fc21089526efca89c8e9403bca23305": plugin type="calico" failed (add): error adding host side routes for interface: cali7fe1acd30df, error: route (Ifindex: 31, Dst: 10.57.16.2/32, Scope: link) already exists for an interface other than 'cali7fe1acd30df': route (Ifindex: 26, Dst: 10.57.16.2/32, Scope: link, Iface: cali7dfce3d62a5)
+  Normal   SandboxChanged          9s (x14 over 23s)  kubelet            Pod sandbox changed, it will be killed and re-created.
+  Normal   Pulling                 9s                 kubelet            Pulling image "quay.io/calico/kube-controllers:v3.31.0"
+  Normal   Pulled                  3s                 kubelet            Successfully pulled image "quay.io/calico/kube-controllers:v3.31.0" in 6.582s (6.582s including waiting). Image size: 53896736 bytes.
+  Normal   Created                 3s                 kubelet            Created container: calico-kube-controllers
+  Normal   Started                 3s                 kubelet            Started container calico-kube-controllers
