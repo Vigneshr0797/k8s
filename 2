@@ -83,3 +83,16 @@ rm -rf /var/lib/networkd
 
 echo "=== CLEANUP COMPLETE ==="
 echo "REBOOTING IS HIGHLY RECOMMENDED!"
+
+
+[root@EQVLWSO2APSIT15 ~]# rm -rf /etc/kubernetes
+rm -rf /var/lib/etcd
+rm -rf /var/lib/kubelet
+rm -rf /var/lib/dockershim
+rm -rf /var/lib/cni
+rm -rf /run/flannel
+rm -rf /etc/cni
+rm -rf /opt/cni
+rm -rf ~/.kube
+rm: cannot remove '/var/lib/kubelet/pods/11e6cb39-91d9-407e-bf5b-e3bc1b91e99e/volumes/kubernetes.io~projected/kube-api-access-w2q79': Device or resource busy
+rm: cannot remove '/var/lib/kubelet/pods/a31986b2-fe19-4a06-859a-3581c9fe4b47/volumes/kubernetes.io~projected/kube-api-access-8dlft': Device or resource busy
