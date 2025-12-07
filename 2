@@ -1,428 +1,85 @@
-Your node is **NotReady** because **Calico CNI did NOT initialize**.
-This is the root cause for:
-
-* `Ready = False` on the node
-* `NetworkReady=false reason:NetworkPluginNotReady: cni plugin not initialized`
-* `calico-node` is in **Init:CrashLoopBackOff**
-* All other pods like **coredns**, **calico-kube-controllers** are **Pending** because the node has a taint:
-
-  ```
-  node.kubernetes.io/not-ready:NoSchedule
-  ```
-
-So nothing can be scheduled until Calico installs correctly.
-
----
-
-# ✅ Root Cause
-
-**Calico CNI is not installed correctly or cannot start.**
-Most commonly caused by:
-
-1. Missing `/etc/cni/net.d/*` config (Calico did not create it)
-2. Missing required modules (eBPF / iptables / xtables)
-3. Incorrect image registry (your image is coming from a private registry)
-4. kubelet cannot find CNI binaries in `/opt/cni/bin/`
-5. IP forwarding disabled
-6. Calico node startup errors
-
----
-
-# 🔍 Step 1 — Check why `calico-node` is crashing
-
-Run:
-
-```bash
-kubectl logs -n kube-system calico-node-tgjpv -c calico-node
-```
-
-Also check the init container:
-
-```bash
-kubectl logs -n kube-system calico-node-tgjpv -c upgrade-ipam
-```
-
-Share the logs if needed — they will directly show the root cause.
-
----
-
-# 🔍 Step 2 — Validate CNI folder
-
-Check CNI config:
-
-```bash
-ls -l /etc/cni/net.d/
-```
-
-If empty → Calico never created config → **kubelet cannot initialize network**.
-
-Check CNI binaries:
-
-```bash
-ls -l /opt/cni/bin/
-```
-
-If empty → install CNI plugin binaries:
-
-```bash
-yum install -y containernetworking-plugins
-```
-
----
-
-# 🔍 Step 3 — Ensure IP forwarding is enabled
-
-Calico requires this:
-
-```bash
-sysctl -w net.ipv4.ip_forward=1
-sysctl -w net.ipv6.conf.all.forwarding=1
-```
-
-Persist:
-
-```bash
-echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
-echo "net.ipv6.conf.all.forwarding=1" >> /etc/sysctl.conf
-sysctl -p
-```
-
----
-
-# 🔍 Step 4 — Check required kernel modules
-
-Calico requires:
-
-```
-ip_set
-ip_tables
-xt_set
-vxlan
-wireguard
-```
-
-Check:
-
-```bash
-lsmod | grep -E "ip_set|vxlan"
-```
-
-If missing:
-
-```bash
-modprobe ip_set
-modprobe vxlan
-```
-
----
-
-# 🔍 Step 5 — Verify your Calico install manifest
-
-You are using:
-
-```
-harbour.equitasbank.com/kubernetes-master/calico-kube-controllers:v3.29.2
-```
-
-Check if all Calico images exist in registry:
-
-```
-calico-node
-calico-kube-controllers
-calico-typha (if enabled)
-calico-cni
-```
-
-If the registry does NOT contain all images → Calico pods fail.
-
----
-
-# 🔍 Step 6 — Remove the "not-ready" taint after fixing Calico
-
-After Calico becomes healthy, remove taint:
-
-```bash
-kubectl taint nodes eqvlwso2apsit15 node.kubernetes.io/not-ready:NoSchedule-
-```
-
----
-
-# 👍 Most Common Fix (90% cases)
-
-On fresh Oracle Linux / RHEL systems, Calico init fails because:
-
-**CNI binaries are missing.**
-
-Fix:
-
-```bash
-yum install -y containernetworking-plugins
-systemctl restart kubelet
-```
-
-Within 1–2 minutes the node should become Ready:
-
-```
-kubectl get nodes
-```
-
----
-
-# If you want:
-
-Send me the output of:
-
-```
-kubectl logs -n kube-system calico-node-tgjpv -c calico-node
-ls -l /etc/cni/net.d/
-ls -l /opt/cni/bin/
-```
-
-I’ll give you the exact fix.
-
-
-
-
-[root@EQVLWSO2APSIT15 ~]# kubectl logs -n kube-system calico-node-tgjpv -c upgrade-ipam
-2025-12-06 22:00:00.438 [INFO][1] ipam/ipam_plugin.go 70: migrating from host-local to calico-ipam...
-2025-12-06 22:00:00.439 [INFO][1] ipam/migrate.go 66: checking host-local IPAM data dir existence...
-2025-12-06 22:00:00.439 [INFO][1] ipam/migrate.go 68: host-local IPAM data dir not found; no migration necessary, successfully exiting...
-2025-12-06 22:00:00.439 [INFO][1] ipam/ipam_plugin.go 100: migration from host-local to calico-ipam complete node="eqvlwso2apsit15"
-[root@EQVLWSO2APSIT15 ~]# ls -l /etc/cni/net.d/
-total 0
-[root@EQVLWSO2APSIT15 ~]# ls -l /opt/cni/bin/
-total 157736
--rwxr-xr-x 1 root root  4438342 Dec  7 03:24 bandwidth
--rwxr-xr-x 1 root root 68833735 Dec  7 03:24 calico
--rwxr-xr-x 1 root root 68833735 Dec  7 03:24 calico-ipam
--rwxr-xr-x 1 root root  2789927 Dec  7 03:24 flannel
--rwxr-xr-x 1 root root  3938771 Dec  7 03:24 host-local
--rwxr-xr-x 1 root root  4010150 Dec  7 03:24 loopback
--rwxr-xr-x 1 root root  4494056 Dec  7 03:24 portmap
--rwxr-xr-x 1 root root  4160022 Dec  7 03:24 tuning
-[root@EQVLWSO2APSIT15 ~]# sysctl -w net.ipv4.ip_forward=1
-sysctl -w net.ipv6.conf.all.forwarding=1
-net.ipv4.ip_forward = 1
-net.ipv6.conf.all.forwarding = 1
-[root@EQVLWSO2APSIT15 ~]# lsmod | grep -E "ip_set|vxlan"
-ip_set_hash_net        53248  3
-ip_set_hash_ip         49152  1
-ip_set                 61440  3 ip_set_hash_ip,xt_set,ip_set_hash_net
-[root@EQVLWSO2APSIT15 ~]# kubectl taint nodes eqvlwso2apsit15 node.kubernetes.io/not-ready:NoSchedule-
-node/eqvlwso2apsit15 untainted
-[root@EQVLWSO2APSIT15 ~]# yum install -y containernetworking-plugins
-Last metadata expiration check: 2:22:28 ago on Sun 07 Dec 2025 05:50:51 AM IST.
-Dependencies resolved.
-========================================================================================================================================================================
- Package                                             Architecture                   Version                                Repository                              Size
-========================================================================================================================================================================
-Installing:
- containernetworking-plugins                         x86_64                         1:1.7.1-1.el9                          Appstream-OEL9                          12 M
-
-Transaction Summary
-========================================================================================================================================================================
-Install  1 Package
-
-Total download size: 12 M
-Installed size: 76 M
-Downloading Packages:
-containernetworking-plugins-1.7.1-1.el9.x86_64.rpm                                                                                       55 MB/s |  12 MB     00:00
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Total                                                                                                                                    54 MB/s |  12 MB     00:00
-Running transaction check
-Transaction check succeeded.
-Running transaction test
-Transaction test succeeded.
-Running transaction
-  Preparing        :                                                                                                                                                1/1
-  Installing       : containernetworking-plugins-1:1.7.1-1.el9.x86_64                                                                                               1/1
-  Running scriptlet: containernetworking-plugins-1:1.7.1-1.el9.x86_64                                                                                               1/1
-  Verifying        : containernetworking-plugins-1:1.7.1-1.el9.x86_64                                                                                               1/1
-
-Installed:
-  containernetworking-plugins-1:1.7.1-1.el9.x86_64
-
-Complete!
-[root@EQVLWSO2APSIT15 ~]# systemctl restart kubelet
-[root@EQVLWSO2APSIT15 ~]# kubectl get nodes
-NAME              STATUS     ROLES           AGE     VERSION
-eqvlwso2apsit15   NotReady   control-plane   4h44m   v1.34.2
-[root@EQVLWSO2APSIT15 ~]# kubectl get nodes
-NAME              STATUS     ROLES           AGE     VERSION
-eqvlwso2apsit15   NotReady   control-plane   4h44m   v1.34.2
-[root@EQVLWSO2APSIT15 ~]# kubectl get nodes
-NAME              STATUS     ROLES           AGE     VERSION
-eqvlwso2apsit15   NotReady   control-plane   4h44m   v1.34.2
-[root@EQVLWSO2APSIT15 ~]# ls -l /etc/cni/net.d/
-total 0
-[root@EQVLWSO2APSIT15 ~]# ls -l /opt/cni/bin/
-total 157736
--rwxr-xr-x 1 root root  4438342 Dec  7 03:24 bandwidth
--rwxr-xr-x 1 root root 68833735 Dec  7 03:24 calico
--rwxr-xr-x 1 root root 68833735 Dec  7 03:24 calico-ipam
--rwxr-xr-x 1 root root  2789927 Dec  7 03:24 flannel
--rwxr-xr-x 1 root root  3938771 Dec  7 03:24 host-local
--rwxr-xr-x 1 root root  4010150 Dec  7 03:24 loopback
--rwxr-xr-x 1 root root  4494056 Dec  7 03:24 portmap
--rwxr-xr-x 1 root root  4160022 Dec  7 03:24 tuning
-[root@EQVLWSO2APSIT15 ~]# kubectl get po -n kube-system
-NAME                                       READY   STATUS                  RESTARTS       AGE
-calico-kube-controllers-6ffb5df975-d59tc   0/1     ContainerCreating       0              4h44m
-calico-node-tgjpv                          0/1     Init:CrashLoopBackOff   62 (23s ago)   4h44m
-coredns-66bc5c9577-4m76q                   0/1     ContainerCreating       0              4h44m
-coredns-66bc5c9577-srpcn                   0/1     ContainerCreating       0              4h44m
-etcd-eqvlwso2apsit15                       1/1     Running                 1              4h45m
-kube-apiserver-eqvlwso2apsit15             1/1     Running                 1              4h45m
-kube-controller-manager-eqvlwso2apsit15    1/1     Running                 1              4h45m
-kube-proxy-28gzx                           1/1     Running                 0              4h44m
-kube-scheduler-eqvlwso2apsit15             1/1     Running                 1              4h45m
-[root@EQVLWSO2APSIT15 ~]# kubectl get po -n kube-system
-NAME                                       READY   STATUS              RESTARTS       AGE
-calico-kube-controllers-6ffb5df975-d59tc   0/1     ContainerCreating   0              4h44m
-calico-node-tgjpv                          0/1     Init:Error          63 (28s ago)   4h44m
-coredns-66bc5c9577-4m76q                   0/1     ContainerCreating   0              4h45m
-coredns-66bc5c9577-srpcn                   0/1     ContainerCreating   0              4h45m
-etcd-eqvlwso2apsit15                       1/1     Running             1              4h45m
-kube-apiserver-eqvlwso2apsit15             1/1     Running             1              4h45m
-kube-controller-manager-eqvlwso2apsit15    1/1     Running             1              4h45m
-kube-proxy-28gzx                           1/1     Running             0              4h45m
-kube-scheduler-eqvlwso2apsit15             1/1     Running             1              4h45m
-[root@EQVLWSO2APSIT15 ~]# kubectl get po -n kube-system
-NAME                                       READY   STATUS              RESTARTS       AGE
-calico-kube-controllers-6ffb5df975-d59tc   0/1     ContainerCreating   0              4h44m
-calico-node-tgjpv                          0/1     Init:Error          63 (29s ago)   4h44m
-coredns-66bc5c9577-4m76q                   0/1     ContainerCreating   0              4h45m
-coredns-66bc5c9577-srpcn                   0/1     ContainerCreating   0              4h45m
-etcd-eqvlwso2apsit15                       1/1     Running             1              4h45m
-kube-apiserver-eqvlwso2apsit15             1/1     Running             1              4h45m
-kube-controller-manager-eqvlwso2apsit15    1/1     Running             1              4h45m
-kube-proxy-28gzx                           1/1     Running             0              4h45m
-kube-scheduler-eqvlwso2apsit15             1/1     Running             1              4h45m
-[root@EQVLWSO2APSIT15 ~]# kubectl get po -n kube-system
-NAME                                       READY   STATUS              RESTARTS       AGE
-calico-kube-controllers-6ffb5df975-d59tc   0/1     ContainerCreating   0              4h44m
-calico-node-tgjpv                          0/1     Init:Error          63 (30s ago)   4h44m
-coredns-66bc5c9577-4m76q                   0/1     ContainerCreating   0              4h45m
-coredns-66bc5c9577-srpcn                   0/1     ContainerCreating   0              4h45m
-etcd-eqvlwso2apsit15                       1/1     Running             1              4h45m
-kube-apiserver-eqvlwso2apsit15             1/1     Running             1              4h45m
-kube-controller-manager-eqvlwso2apsit15    1/1     Running             1              4h45m
-kube-proxy-28gzx                           1/1     Running             0              4h45m
-kube-scheduler-eqvlwso2apsit15             1/1     Running             1              4h45m
-[root@EQVLWSO2APSIT15 ~]# kubectl delete pods --all -n kube-system
-pod "calico-kube-controllers-6ffb5df975-d59tc" deleted from kube-system namespace
-pod "calico-node-tgjpv" deleted from kube-system namespace
-pod "coredns-66bc5c9577-4m76q" deleted from kube-system namespace
-pod "coredns-66bc5c9577-srpcn" deleted from kube-system namespace
-pod "etcd-eqvlwso2apsit15" deleted from kube-system namespace
-pod "kube-apiserver-eqvlwso2apsit15" deleted from kube-system namespace
-pod "kube-controller-manager-eqvlwso2apsit15" deleted from kube-system namespace
-pod "kube-proxy-28gzx" deleted from kube-system namespace
-pod "kube-scheduler-eqvlwso2apsit15" deleted from kube-system namespace
-[root@EQVLWSO2APSIT15 ~]# kubectl get po -n kube-system
-NAME                                       READY   STATUS       RESTARTS     AGE
-calico-kube-controllers-6ffb5df975-f8llq   0/1     Pending      0            5s
-calico-node-lmqls                          0/1     Init:Error   1 (3s ago)   5s
-coredns-66bc5c9577-hs5vr                   0/1     Pending      0            5s
-coredns-66bc5c9577-zchxk                   0/1     Pending      0            5s
-etcd-eqvlwso2apsit15                       1/1     Running      1            5s
-kube-apiserver-eqvlwso2apsit15             1/1     Running      1            5s
-kube-controller-manager-eqvlwso2apsit15    1/1     Running      1            5s
-kube-proxy-dgpng                           1/1     Running      0            5s
-kube-scheduler-eqvlwso2apsit15             1/1     Running      1            5s
-[root@EQVLWSO2APSIT15 ~]# kubectl get po -n kube-system
-NAME                                       READY   STATUS       RESTARTS     AGE
-calico-kube-controllers-6ffb5df975-f8llq   0/1     Pending      0            6s
-calico-node-lmqls                          0/1     Init:Error   1 (4s ago)   6s
-coredns-66bc5c9577-hs5vr                   0/1     Pending      0            6s
-coredns-66bc5c9577-zchxk                   0/1     Pending      0            6s
-etcd-eqvlwso2apsit15                       1/1     Running      1            6s
-kube-apiserver-eqvlwso2apsit15             1/1     Running      1            6s
-kube-controller-manager-eqvlwso2apsit15    1/1     Running      1            6s
-kube-proxy-dgpng                           1/1     Running      0            6s
-kube-scheduler-eqvlwso2apsit15             1/1     Running      1            6s
-[root@EQVLWSO2APSIT15 ~]# kubectl get po -n kube-system
-NAME                                       READY   STATUS       RESTARTS     AGE
-calico-kube-controllers-6ffb5df975-f8llq   0/1     Pending      0            8s
-calico-node-lmqls                          0/1     Init:Error   1 (6s ago)   8s
-coredns-66bc5c9577-hs5vr                   0/1     Pending      0            8s
-coredns-66bc5c9577-zchxk                   0/1     Pending      0            8s
-etcd-eqvlwso2apsit15                       1/1     Running      1            8s
-kube-apiserver-eqvlwso2apsit15             1/1     Running      1            8s
-kube-controller-manager-eqvlwso2apsit15    1/1     Running      1            8s
-kube-proxy-dgpng                           1/1     Running      0            8s
-kube-scheduler-eqvlwso2apsit15             1/1     Running      1            8s
-[root@EQVLWSO2APSIT15 ~]# kubectl get po -n kube-system
-NAME                                       READY   STATUS       RESTARTS     AGE
-calico-kube-controllers-6ffb5df975-f8llq   0/1     Pending      0            9s
-calico-node-lmqls                          0/1     Init:Error   1 (7s ago)   9s
-coredns-66bc5c9577-hs5vr                   0/1     Pending      0            9s
-coredns-66bc5c9577-zchxk                   0/1     Pending      0            9s
-etcd-eqvlwso2apsit15                       1/1     Running      1            9s
-kube-apiserver-eqvlwso2apsit15             1/1     Running      1            9s
-kube-controller-manager-eqvlwso2apsit15    1/1     Running      1            9s
-kube-proxy-dgpng                           1/1     Running      0            9s
-kube-scheduler-eqvlwso2apsit15             1/1     Running      1            9s
-[root@EQVLWSO2APSIT15 ~]# kubectl deacribe pod coredns-66bc5c9577-hs5vr -n kube-system
-error: unknown command "deacribe" for "kubectl"
-
-Did you mean this?
-        describe
-[root@EQVLWSO2APSIT15 ~]# kubectl describe pod coredns-66bc5c9577-hs5vr -n kube-system
-Name:                 coredns-66bc5c9577-hs5vr
-Namespace:            kube-system
-Priority:             2000000000
-Priority Class Name:  system-cluster-critical
-Service Account:      coredns
-Node:                 <none>
-Labels:               k8s-app=kube-dns
-                      pod-template-hash=66bc5c9577
-Annotations:          <none>
-Status:               Pending
-IP:
-IPs:                  <none>
-Controlled By:        ReplicaSet/coredns-66bc5c9577
-Containers:
-  coredns:
-    Image:       registry.k8s.io/coredns/coredns:v1.12.1
-    Ports:       53/UDP (dns), 53/TCP (dns-tcp), 9153/TCP (metrics), 8080/TCP (liveness-probe), 8181/TCP (readiness-probe)
-    Host Ports:  0/UDP (dns), 0/TCP (dns-tcp), 0/TCP (metrics), 0/TCP (liveness-probe), 0/TCP (readiness-probe)
-    Args:
-      -conf
-      /etc/coredns/Corefile
-    Limits:
-      memory:  170Mi
-    Requests:
-      cpu:        100m
-      memory:     70Mi
-    Liveness:     http-get http://:liveness-probe/health delay=60s timeout=5s period=10s #success=1 #failure=5
-    Readiness:    http-get http://:readiness-probe/ready delay=0s timeout=1s period=10s #success=1 #failure=3
-    Environment:  <none>
-    Mounts:
-      /etc/coredns from config-volume (ro)
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-9xlzn (ro)
-Conditions:
-  Type           Status
-  PodScheduled   False
-Volumes:
-  config-volume:
-    Type:      ConfigMap (a volume populated by a ConfigMap)
-    Name:      coredns
-    Optional:  false
-  kube-api-access-9xlzn:
-    Type:                    Projected (a volume that contains injected data from multiple sources)
-    TokenExpirationSeconds:  3607
-    ConfigMapName:           kube-root-ca.crt
-    Optional:                false
-    DownwardAPI:             true
-QoS Class:                   Burstable
-Node-Selectors:              kubernetes.io/os=linux
-Tolerations:                 CriticalAddonsOnly op=Exists
-                             node-role.kubernetes.io/control-plane:NoSchedule
-                             node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
-                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
-Events:
-  Type     Reason            Age   From               Message
-  ----     ------            ----  ----               -------
-  Warning  FailedScheduling  39s   default-scheduler  0/1 nodes are available: 1 node(s) had untolerated taint(s). no new claims to deallocate, preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.
-[root@EQVLWSO2APSIT15 ~]#
+#!/bin/bash
+echo "=== STOPPING SERVICES ==="
+systemctl stop kubelet 2>/dev/null
+systemctl disable kubelet 2>/dev/null
+
+systemctl stop containerd 2>/dev/null
+systemctl disable containerd 2>/dev/null
+
+systemctl stop docker 2>/dev/null
+systemctl disable docker 2>/dev/null
+
+echo "=== REMOVING PACKAGES ==="
+# RHEL/CentOS/Oracle
+yum remove -y kubeadm kubectl kubelet kubernetes-cni containerd.io containerd docker docker-ce 2>/dev/null
+
+# Debian/Ubuntu (ignore errors)
+apt purge -y kubeadm kubectl kubelet kubernetes-cni containerd.io containerd docker docker-ce 2>/dev/null
+
+echo "=== DELETING KUBERNETES DIRECTORIES ==="
+rm -rf /etc/kubernetes
+rm -rf /var/lib/etcd
+rm -rf /var/lib/kubelet
+rm -rf /var/lib/dockershim
+rm -rf /var/lib/cni
+rm -rf /run/flannel
+rm -rf /etc/cni
+rm -rf /opt/cni
+rm -rf ~/.kube
+
+echo "=== DELETING CALICO DIRECTORIES ==="
+rm -rf /etc/calico
+rm -rf /var/lib/calico
+
+echo "=== REMOVING CONTAINERD DIRECTORIES ==="
+rm -rf /var/lib/containerd
+rm -rf /etc/containerd
+rm -rf /run/containerd
+
+echo "=== REMOVING DOCKER DIRECTORIES ==="
+rm -rf /var/lib/docker
+rm -rf /etc/docker
+rm -rf /run/docker
+
+echo "=== REMOVING OVERLAY/OVERLAY2 STORAGE ==="
+rm -rf /var/lib/containerd/io.containerd.snapshotter.v1.overlayfs
+rm -rf /var/lib/containerd/io.containerd.snapshotter.v1.btrfs
+rm -rf /var/lib/containerd/io.containerd.snapshotter.v1.native
+rm -rf /var/lib/containerd/io.containerd.snapshotter.v1.zfs
+
+rm -rf /var/lib/docker/overlay
+rm -rf /var/lib/docker/overlay2
+
+echo "=== UNMOUNTING ANY OVERLAY MOUNTS ==="
+for m in $(mount | grep overlay | awk '{print $3}'); do
+    umount -l $m 2>/dev/null
+done
+
+echo "=== REMOVING CALICO NETWORK INTERFACES ==="
+ip link del tunl0 2>/dev/null
+ip link del vxlan.calico 2>/dev/null
+ip link del cni0 2>/dev/null
+ip link del flannel.1 2>/dev/null
+
+echo "=== FLUSHING IPTABLES ==="
+iptables -F
+iptables -X
+iptables -t nat -F
+iptables -t nat -X
+iptables -t mangle -F
+iptables -t mangle -X
+iptables -t raw -F
+iptables -t raw -X
+
+echo "=== DELETING SYSTEMD SERVICES ==="
+rm -f /etc/systemd/system/kubelet.service
+rm -f /etc/systemd/system/containerd.service
+rm -f /etc/systemd/system/docker.service
+systemctl daemon-reload
+
+echo "=== CLEANING NETWORK CONFIG (OPTIONAL) ==="
+rm -rf /var/lib/systemd/network
+rm -rf /var/lib/networkd
+
+echo "=== CLEANUP COMPLETE ==="
+echo "REBOOTING IS HIGHLY RECOMMENDED!"
