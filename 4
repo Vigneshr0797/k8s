@@ -1,0 +1,138 @@
+[root@EQVLWSO2APSIT15 ~]# kubectl get nodes
+NAME              STATUS     ROLES           AGE     VERSION
+eqvlwso2apsit15   NotReady   control-plane   4h38m   v1.34.2
+[root@EQVLWSO2APSIT15 ~]# kubectl describe node eqvlwso2apsit15
+Name:               eqvlwso2apsit15
+Roles:              control-plane
+Labels:             beta.kubernetes.io/arch=amd64
+                    beta.kubernetes.io/os=linux
+                    kubernetes.io/arch=amd64
+                    kubernetes.io/hostname=eqvlwso2apsit15
+                    kubernetes.io/os=linux
+                    node-role.kubernetes.io/control-plane=
+                    node.kubernetes.io/exclude-from-external-load-balancers=
+Annotations:        node.alpha.kubernetes.io/ttl: 0
+                    volumes.kubernetes.io/controller-managed-attach-detach: true
+CreationTimestamp:  Sun, 07 Dec 2025 03:28:59 +0530
+Taints:             node-role.kubernetes.io/control-plane:NoSchedule
+                    node.kubernetes.io/not-ready:NoSchedule
+Unschedulable:      false
+Lease:
+  HolderIdentity:  eqvlwso2apsit15
+  AcquireTime:     <unset>
+  RenewTime:       Sun, 07 Dec 2025 08:07:39 +0530
+Conditions:
+  Type             Status  LastHeartbeatTime                 LastTransitionTime                Reason                       Message
+  ----             ------  -----------------                 ------------------                ------                       -------
+  MemoryPressure   False   Sun, 07 Dec 2025 08:05:38 +0530   Sun, 07 Dec 2025 03:28:57 +0530   KubeletHasSufficientMemory   kubelet has sufficient memory available
+  DiskPressure     False   Sun, 07 Dec 2025 08:05:38 +0530   Sun, 07 Dec 2025 03:28:57 +0530   KubeletHasNoDiskPressure     kubelet has no disk pressure
+  PIDPressure      False   Sun, 07 Dec 2025 08:05:38 +0530   Sun, 07 Dec 2025 03:28:57 +0530   KubeletHasSufficientPID      kubelet has sufficient PID available
+  Ready            False   Sun, 07 Dec 2025 08:05:38 +0530   Sun, 07 Dec 2025 03:28:57 +0530   KubeletNotReady              container runtime network not ready: NetworkReady=false reason:NetworkPluginNotReady message:Network plugin returns error: cni plugin not initialized
+Addresses:
+  InternalIP:  10.57.12.120
+  Hostname:    eqvlwso2apsit15
+Capacity:
+  cpu:                4
+  ephemeral-storage:  81856Mi
+  hugepages-1Gi:      0
+  hugepages-2Mi:      0
+  memory:             15909564Ki
+  pods:               110
+Allocatable:
+  cpu:                4
+  ephemeral-storage:  77249013223
+  hugepages-1Gi:      0
+  hugepages-2Mi:      0
+  memory:             15807164Ki
+  pods:               110
+System Info:
+  Machine ID:                 fe81e954866144f181f4eef820013c28
+  System UUID:                55181e42-1891-e6e3-b6e7-5f5a0c78669b
+  Boot ID:                    4c5d20b5-f8fb-48de-8731-94cfcd5ec999
+  Kernel Version:             5.15.0-314.193.5.4.el9uek.x86_64
+  OS Image:                   Oracle Linux Server 9.6
+  Operating System:           linux
+  Architecture:               amd64
+  Container Runtime Version:  containerd://2.2.0
+  Kubelet Version:            v1.34.2
+  Kube-Proxy Version:
+PodCIDR:                      10.57.16.0/24
+PodCIDRs:                     10.57.16.0/24
+Non-terminated Pods:          (6 in total)
+  Namespace                   Name                                       CPU Requests  CPU Limits  Memory Requests  Memory Limits  Age
+  ---------                   ----                                       ------------  ----------  ---------------  -------------  ---
+  kube-system                 calico-node-tgjpv                          250m (6%)     0 (0%)      0 (0%)           0 (0%)         4h37m
+  kube-system                 etcd-eqvlwso2apsit15                       100m (2%)     0 (0%)      100Mi (0%)       0 (0%)         4h38m
+  kube-system                 kube-apiserver-eqvlwso2apsit15             250m (6%)     0 (0%)      0 (0%)           0 (0%)         4h38m
+  kube-system                 kube-controller-manager-eqvlwso2apsit15    200m (5%)     0 (0%)      0 (0%)           0 (0%)         4h38m
+  kube-system                 kube-proxy-28gzx                           0 (0%)        0 (0%)      0 (0%)           0 (0%)         4h38m
+  kube-system                 kube-scheduler-eqvlwso2apsit15             100m (2%)     0 (0%)      0 (0%)           0 (0%)         4h38m
+Allocated resources:
+  (Total limits may be over 100 percent, i.e., overcommitted.)
+  Resource           Requests    Limits
+  --------           --------    ------
+  cpu                900m (22%)  0 (0%)
+  memory             100Mi (0%)  0 (0%)
+  ephemeral-storage  0 (0%)      0 (0%)
+  hugepages-1Gi      0 (0%)      0 (0%)
+  hugepages-2Mi      0 (0%)      0 (0%)
+Events:              <none>
+[root@EQVLWSO2APSIT15 ~]# kubectl get po -n kube-system
+NAME                                       READY   STATUS                  RESTARTS      AGE
+calico-kube-controllers-6ffb5df975-d59tc   0/1     Pending                 0             4h38m
+calico-node-tgjpv                          0/1     Init:CrashLoopBackOff   59 (2m ago)   4h38m
+coredns-66bc5c9577-4m76q                   0/1     Pending                 0             4h38m
+coredns-66bc5c9577-srpcn                   0/1     Pending                 0             4h38m
+etcd-eqvlwso2apsit15                       1/1     Running                 1             4h39m
+kube-apiserver-eqvlwso2apsit15             1/1     Running                 1             4h39m
+kube-controller-manager-eqvlwso2apsit15    1/1     Running                 1             4h39m
+kube-proxy-28gzx                           1/1     Running                 0             4h38m
+kube-scheduler-eqvlwso2apsit15             1/1     Running                 1             4h39m
+[root@EQVLWSO2APSIT15 ~]# kubectl describe pod calico-kube-controllers-6ffb5df975-d59tc -n kube-system
+Name:                 calico-kube-controllers-6ffb5df975-d59tc
+Namespace:            kube-system
+Priority:             2000000000
+Priority Class Name:  system-cluster-critical
+Service Account:      calico-kube-controllers
+Node:                 <none>
+Labels:               k8s-app=calico-kube-controllers
+                      pod-template-hash=6ffb5df975
+Annotations:          <none>
+Status:               Pending
+IP:
+IPs:                  <none>
+Controlled By:        ReplicaSet/calico-kube-controllers-6ffb5df975
+Containers:
+  calico-kube-controllers:
+    Image:      harbour.equitasbank.com/kubernetes-master/calico-kube-controllers:v3.29.2
+    Port:       <none>
+    Host Port:  <none>
+    Liveness:   exec [/usr/bin/check-status -l] delay=10s timeout=10s period=10s #success=1 #failure=6
+    Readiness:  exec [/usr/bin/check-status -r] delay=0s timeout=1s period=10s #success=1 #failure=3
+    Environment:
+      ENABLED_CONTROLLERS:  node
+      DATASTORE_TYPE:       kubernetes
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-4vpcl (ro)
+Conditions:
+  Type           Status
+  PodScheduled   False
+Volumes:
+  kube-api-access-4vpcl:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              kubernetes.io/os=linux
+Tolerations:                 CriticalAddonsOnly op=Exists
+                             node-role.kubernetes.io/control-plane:NoSchedule
+                             node-role.kubernetes.io/master:NoSchedule
+                             node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason            Age                     From               Message
+  ----     ------            ----                    ----               -------
+  Warning  FailedScheduling  3m22s (x56 over 4h38m)  default-scheduler  0/1 nodes are available: 1 node(s) had untolerated taint(s). no new claims to deallocate, preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.
+[root@EQVLWSO2APSIT15 ~]#
