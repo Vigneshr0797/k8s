@@ -1,167 +1,163 @@
-[root@EQVLWSO2APSIT15 images]# kubectl get nodes
-NAME              STATUS     ROLES           AGE    VERSION
-eqvlwso2apsit15   NotReady   control-plane   2m3s   v1.34.2
-[root@EQVLWSO2APSIT15 images]# kubectl get po -n kube-system
-NAME                                       READY   STATUS       RESTARTS      AGE
-calico-kube-controllers-6ffb5df975-fqfvt   0/1     Pending      0             15s
-calico-node-mtpg8                          0/1     Init:Error   1 (13s ago)   15s
-coredns-66bc5c9577-4jnt4                   0/1     Pending      0             2m2s
-coredns-66bc5c9577-wbfhs                   0/1     Pending      0             2m2s
-etcd-eqvlwso2apsit15                       1/1     Running      2             2m10s
-kube-apiserver-eqvlwso2apsit15             1/1     Running      2             2m10s
-kube-controller-manager-eqvlwso2apsit15    1/1     Running      2             2m10s
-kube-proxy-jd6rs                           1/1     Running      0             2m2s
-kube-scheduler-eqvlwso2apsit15             1/1     Running      2             2m10s
-[root@EQVLWSO2APSIT15 images]# kubectl describe pod coredns-66bc5c9577-wbfhs -n kube-system
-Name:                 coredns-66bc5c9577-wbfhs
-Namespace:            kube-system
-Priority:             2000000000
-Priority Class Name:  system-cluster-critical
-Service Account:      coredns
-Node:                 <none>
-Labels:               k8s-app=kube-dns
-                      pod-template-hash=66bc5c9577
-Annotations:          <none>
-Status:               Pending
-IP:
-IPs:                  <none>
-Controlled By:        ReplicaSet/coredns-66bc5c9577
-Containers:
-  coredns:
-    Image:       registry.k8s.io/coredns/coredns:v1.12.1
-    Ports:       53/UDP (dns), 53/TCP (dns-tcp), 9153/TCP (metrics), 8080/TCP (liveness-probe), 8181/TCP (readiness-probe)
-    Host Ports:  0/UDP (dns), 0/TCP (dns-tcp), 0/TCP (metrics), 0/TCP (liveness-probe), 0/TCP (readiness-probe)
-    Args:
-      -conf
-      /etc/coredns/Corefile
-    Limits:
-      memory:  170Mi
-    Requests:
-      cpu:        100m
-      memory:     70Mi
-    Liveness:     http-get http://:liveness-probe/health delay=60s timeout=5s period=10s #success=1 #failure=5
-    Readiness:    http-get http://:readiness-probe/ready delay=0s timeout=1s period=10s #success=1 #failure=3
-    Environment:  <none>
-    Mounts:
-      /etc/coredns from config-volume (ro)
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-zqg6t (ro)
-Conditions:
-  Type           Status
-  PodScheduled   False
-Volumes:
-  config-volume:
-    Type:      ConfigMap (a volume populated by a ConfigMap)
-    Name:      coredns
-    Optional:  false
-  kube-api-access-zqg6t:
-    Type:                    Projected (a volume that contains injected data from multiple sources)
-    TokenExpirationSeconds:  3607
-    ConfigMapName:           kube-root-ca.crt
-    Optional:                false
-    DownwardAPI:             true
-QoS Class:                   Burstable
-Node-Selectors:              kubernetes.io/os=linux
-Tolerations:                 CriticalAddonsOnly op=Exists
-                             node-role.kubernetes.io/control-plane:NoSchedule
-                             node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
-                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
-Events:
-  Type     Reason            Age    From               Message
-  ----     ------            ----   ----               -------
-  Warning  FailedScheduling  2m23s  default-scheduler  0/1 nodes are available: 1 node(s) had untolerated taint(s). no new claims to deallocate, preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.
-[root@EQVLWSO2APSIT15 images]# kubectl get nodes
-NAME              STATUS     ROLES           AGE     VERSION
-eqvlwso2apsit15   NotReady   control-plane   2m40s   v1.34.2
-[root@EQVLWSO2APSIT15 images]# kubectl describe node eqvlwso2apsit15
-Name:               eqvlwso2apsit15
-Roles:              control-plane
-Labels:             beta.kubernetes.io/arch=amd64
-                    beta.kubernetes.io/os=linux
-                    kubernetes.io/arch=amd64
-                    kubernetes.io/hostname=eqvlwso2apsit15
-                    kubernetes.io/os=linux
-                    node-role.kubernetes.io/control-plane=
-                    node.kubernetes.io/exclude-from-external-load-balancers=
-Annotations:        node.alpha.kubernetes.io/ttl: 0
-                    volumes.kubernetes.io/controller-managed-attach-detach: true
-CreationTimestamp:  Sun, 07 Dec 2025 08:38:34 +0530
-Taints:             node-role.kubernetes.io/control-plane:NoSchedule
-                    node.kubernetes.io/not-ready:NoSchedule
-Unschedulable:      false
-Lease:
-  HolderIdentity:  eqvlwso2apsit15
-  AcquireTime:     <unset>
-  RenewTime:       Sun, 07 Dec 2025 08:41:19 +0530
-Conditions:
-  Type             Status  LastHeartbeatTime                 LastTransitionTime                Reason                       Message
-  ----             ------  -----------------                 ------------------                ------                       -------
-  MemoryPressure   False   Sun, 07 Dec 2025 08:40:38 +0530   Sun, 07 Dec 2025 08:38:33 +0530   KubeletHasSufficientMemory   kubelet has sufficient memory available
-  DiskPressure     False   Sun, 07 Dec 2025 08:40:38 +0530   Sun, 07 Dec 2025 08:38:33 +0530   KubeletHasNoDiskPressure     kubelet has no disk pressure
-  PIDPressure      False   Sun, 07 Dec 2025 08:40:38 +0530   Sun, 07 Dec 2025 08:38:33 +0530   KubeletHasSufficientPID      kubelet has sufficient PID available
-  Ready            False   Sun, 07 Dec 2025 08:40:38 +0530   Sun, 07 Dec 2025 08:38:33 +0530   KubeletNotReady              container runtime network not ready: NetworkReady=false reason:NetworkPluginNotReady message:Network plugin returns error: cni plugin not initialized
-Addresses:
-  InternalIP:  10.57.12.120
-  Hostname:    eqvlwso2apsit15
-Capacity:
-  cpu:                4
-  ephemeral-storage:  81856Mi
-  hugepages-1Gi:      0
-  hugepages-2Mi:      0
-  memory:             15909564Ki
-  pods:               110
-Allocatable:
-  cpu:                4
-  ephemeral-storage:  77249013223
-  hugepages-1Gi:      0
-  hugepages-2Mi:      0
-  memory:             15807164Ki
-  pods:               110
-System Info:
-  Machine ID:                 fe81e954866144f181f4eef820013c28
-  System UUID:                55181e42-1891-e6e3-b6e7-5f5a0c78669b
-  Boot ID:                    4c5d20b5-f8fb-48de-8731-94cfcd5ec999
-  Kernel Version:             5.15.0-314.193.5.4.el9uek.x86_64
-  OS Image:                   Oracle Linux Server 9.6
-  Operating System:           linux
-  Architecture:               amd64
-  Container Runtime Version:  containerd://2.2.0
-  Kubelet Version:            v1.34.2
-  Kube-Proxy Version:
-PodCIDR:                      10.57.16.0/24
-PodCIDRs:                     10.57.16.0/24
-Non-terminated Pods:          (6 in total)
-  Namespace                   Name                                       CPU Requests  CPU Limits  Memory Requests  Memory Limits  Age
-  ---------                   ----                                       ------------  ----------  ---------------  -------------  ---
-  kube-system                 calico-node-mtpg8                          250m (6%)     0 (0%)      0 (0%)           0 (0%)         53s
-  kube-system                 etcd-eqvlwso2apsit15                       100m (2%)     0 (0%)      100Mi (0%)       0 (0%)         2m48s
-  kube-system                 kube-apiserver-eqvlwso2apsit15             250m (6%)     0 (0%)      0 (0%)           0 (0%)         2m48s
-  kube-system                 kube-controller-manager-eqvlwso2apsit15    200m (5%)     0 (0%)      0 (0%)           0 (0%)         2m48s
-  kube-system                 kube-proxy-jd6rs                           0 (0%)        0 (0%)      0 (0%)           0 (0%)         2m40s
-  kube-system                 kube-scheduler-eqvlwso2apsit15             100m (2%)     0 (0%)      0 (0%)           0 (0%)         2m48s
-Allocated resources:
-  (Total limits may be over 100 percent, i.e., overcommitted.)
-  Resource           Requests    Limits
-  --------           --------    ------
-  cpu                900m (22%)  0 (0%)
-  memory             100Mi (0%)  0 (0%)
-  ephemeral-storage  0 (0%)      0 (0%)
-  hugepages-1Gi      0 (0%)      0 (0%)
-  hugepages-2Mi      0 (0%)      0 (0%)
-Events:
-  Type     Reason                   Age                    From             Message
-  ----     ------                   ----                   ----             -------
-  Normal   Starting                 2m39s                  kube-proxy
-  Normal   NodeAllocatableEnforced  2m53s                  kubelet          Updated Node Allocatable limit across pods
-  Warning  InvalidDiskCapacity      2m53s                  kubelet          invalid capacity 0 on image filesystem
-  Normal   NodeHasSufficientMemory  2m53s (x8 over 2m53s)  kubelet          Node eqvlwso2apsit15 status is now: NodeHasSufficientMemory
-  Normal   NodeHasNoDiskPressure    2m53s (x8 over 2m53s)  kubelet          Node eqvlwso2apsit15 status is now: NodeHasNoDiskPressure
-  Normal   NodeHasSufficientPID     2m53s (x7 over 2m53s)  kubelet          Node eqvlwso2apsit15 status is now: NodeHasSufficientPID
-  Normal   Starting                 2m53s                  kubelet          Starting kubelet.
-  Normal   Starting                 2m48s                  kubelet          Starting kubelet.
-  Warning  InvalidDiskCapacity      2m48s                  kubelet          invalid capacity 0 on image filesystem
-  Normal   NodeAllocatableEnforced  2m48s                  kubelet          Updated Node Allocatable limit across pods
-  Normal   NodeHasSufficientMemory  2m48s                  kubelet          Node eqvlwso2apsit15 status is now: NodeHasSufficientMemory
-  Normal   NodeHasNoDiskPressure    2m48s                  kubelet          Node eqvlwso2apsit15 status is now: NodeHasNoDiskPressure
-  Normal   NodeHasSufficientPID     2m48s                  kubelet          Node eqvlwso2apsit15 status is now: NodeHasSufficientPID
-  Normal   RegisteredNode           2m41s                  node-controller  Node eqvlwso2apsit15 event: Registered Node eqvlwso2apsit15 in Controller
-[root@EQVLWSO2APSIT15 images]#
+You're seeing a classic single-node / fresh-cluster problem: the node is `NotReady` because the CNI never finished initializing (`NetworkPluginNotReady: cni plugin not initialized`), Calico pods are `Init:Error` / `Pending`, and that prevents control-plane/user pods (like CoreDNS) from scheduling. Below I give a focused, ordered troubleshooting + fix runbook you can execute now (commands + why) and links to further reading.
+
+---
+
+# TL;DR (what will fix it 95% of the time)
+
+1. Install / fix the CNI (Calico) properly (apply the correct Calico manifest or operator for your Kubernetes version). Calico v3.31+ is tested with K8s 1.34. ([docs.tigera.io][1])
+2. Make sure node can pull images and the container runtime is healthy (containerd). Check `crictl`/`journalctl`/`kubectl logs` to find why calico init container failed. Common causes: missing kernel module `br_netfilter`, `net.bridge.bridge-nf_call_iptables` not set, CNI binaries absent in `/opt/cni/bin`, or image-pull/network/proxy problems. ([Stack Overflow][2])
+
+---
+
+# Step-by-step (run these on the node / cluster control plane)
+
+## 1) Quick view (what’s failing)
+
+```bash
+kubectl get pods -n kube-system -o wide
+kubectl get nodes -o wide
+```
+
+## 2) Inspect the calico pod that is `Init:Error`
+
+Replace the pod name with the actual pod name you have:
+
+```bash
+kubectl -n kube-system describe pod calico-node-mtpg8
+kubectl -n kube-system logs calico-node-mtpg8 -c calico-node      # main container
+kubectl -n kube-system logs calico-node-mtpg8 -c calico-node -p   # previous, if restarted
+kubectl -n kube-system logs calico-kube-controllers-6ffb5df975-fqfvt
+```
+
+Look for errors like missing files, permission denied, failed to create interface, or image-pull errors. If logs show “No networks found in /etc/cni/net.d” or similar, the CNI config was never written. ([Stack Overflow][2])
+
+## 3) Check container runtime & CNI filesystem
+
+```bash
+# containerd status
+sudo systemctl status containerd
+sudo journalctl -u containerd --no-pager -n 200
+
+# kubelet logs (why it reports NetworkPluginNotReady)
+sudo journalctl -u kubelet --no-pager -n 200
+
+# show CNI config and plugin locations
+ls -la /etc/cni/net.d
+ls -la /opt/cni/bin
+```
+
+If `/opt/cni/bin` is empty or missing the plugins, CNI won't initialize. If there are image-pull errors in calico logs, ensure network/proxy/registry access.
+
+## 4) Kernel / sysctl checks (very common cause)
+
+Calico (and other CNIs) expects bridged traffic to be visible to iptables. On many systems you must enable br_netfilter and set net.bridge.* sysctls:
+
+```bash
+# quick check/apply (temporary)
+sudo modprobe br_netfilter
+sudo sysctl -w net.bridge.bridge-nf_call_iptables=1
+sudo sysctl -w net.bridge.bridge-nf_call_ip6tables=1
+
+# make persistent
+echo 'br_netfilter' | sudo tee /etc/modules-load.d/br_netfilter.conf
+cat <<EOF | sudo tee /etc/sysctl.d/99-k8s.conf
+net.bridge.bridge-nf-call-iptables  = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+EOF
+sudo sysctl --system
+```
+
+If `modprobe br_netfilter` fails or sysctl doesn't exist, that explains CNI errors. ([Kubernetes][3])
+
+## 5) If CNI not installed or corrupt — (re)install Calico
+
+Use the official Calico quickstart / manifest. For kubeadm/self-managed, Project Calico provides a manifest/installer. Example:
+
+```bash
+# recommended: use the official URL from Tigera
+kubectl apply -f https://docs.tigera.io/calico/latest/manifests/calico.yaml
+```
+
+(Or install using the tigera-operator / Helm; choose the method you prefer.) Calico releases have compatibility information; Calico v3.31 supports K8s 1.34 (so pick a tested release). After apply, watch the calico pods start:
+
+```bash
+kubectl -n kube-system rollout status daemonset/calico-node
+kubectl -n kube-system get pods -w
+```
+
+If the node still shows `NetworkPluginNotReady`, check calico-node logs again. ([docs.tigera.io][1])
+
+> Note: If you're on an airgapped/private registry environment you must edit the manifest to point images to your registry.
+
+## 6) Check image pulls / networking / proxies
+
+If calico init fails pulling images, fix credentials/proxy or preload images:
+
+```bash
+# see events for image pull
+kubectl -n kube-system describe pod calico-node-mtpg8 | sed -n '/Events:/,$p'
+
+# or on the host, test Docker/Containerd can pull
+sudo ctr images pull docker.io/calico/node:<tag>   # or use crictl with your runtime
+```
+
+## 7) `invalid capacity 0 on image filesystem` warnings (non-blocking)
+
+You have events `InvalidDiskCapacity invalid capacity 0 on image filesystem`. These are usually warnings logged early at kubelet startup and often harmless; they can often be ignored unless you see disk-related failures. You can search/monitor but they usually don't prevent CNI initialization. ([GitHub][4])
+
+## 8) Optional: Allow scheduling on control-plane (if you want single-node cluster to run system pods)
+
+If you intentionally want system pods scheduled on the control-plane (single-node clusters often do), remove the control-plane taint so regular pods can run there (but Calico/CoreDNS should be tolerating it anyway). To remove:
+
+```bash
+kubectl taint nodes eqvlwso2apsit15 node-role.kubernetes.io/control-plane:NoSchedule-
+# or remove for all nodes:
+kubectl taint nodes --all node-role.kubernetes.io/control-plane:NoSchedule-
+```
+
+Use this only if you understand scheduling implications.
+
+---
+
+# Typical root causes I see from your output
+
+* Calico CNI was not successfully installed or its init container errored → kubelet reports network plugin not initialized and node becomes NotReady. (Fix: install Calico correctly and inspect calico-node logs.) ([docs.tigera.io][1])
+* br_netfilter/sysctl not enabled → CNI cannot program iptables rules / network interface → Calico fails. (Fix: `modprobe br_netfilter` + sysctl.) ([Kubernetes][3])
+* Image pull / proxy / registry issues or missing CNI binaries in `/opt/cni/bin`. (Fix: make images accessible or preload images and ensure manifest points to correct images.)
+* `InvalidDiskCapacity` messages are mostly warnings and not the immediate cause. ([GitHub][4])
+
+---
+
+# If you want, run these commands now and paste the outputs
+
+(you already provided helpful dumps — next helpful outputs:)
+
+```bash
+kubectl -n kube-system get pods -o wide
+kubectl -n kube-system describe pod calico-node-mtpg8
+kubectl -n kube-system logs calico-node-mtpg8 -c calico-node
+sudo journalctl -u kubelet -n 200 --no-pager
+ls -la /opt/cni/bin /etc/cni/net.d
+sudo systemctl status containerd
+```
+
+If you paste the `calico-node` logs and `kubelet` journal lines that show the error, I will read them and tell you the exact error and the next action. (If you prefer, apply the Calico manifest first with `kubectl apply -f https://docs.tigera.io/calico/latest/manifests/calico.yaml` and then paste the logs if anything still fails.)
+
+---
+
+# References / reading
+
+* Calico quickstart and manifests (install instructions & compatibility). ([docs.tigera.io][1])
+* Calico compatibility (Calico v3.31 tested against K8s 1.34). ([docs.tigera.io][5])
+* Common CNI “No networks found in /etc/cni/net.d” / `cni plugin not initialized` troubleshooting. ([Stack Overflow][2])
+* `invalid capacity 0 on image filesystem` explanation / common harmless warning. ([GitHub][4])
+
+---
+
+If you want, paste the `calico-node` logs and `kubelet` journal output you get after trying the sysctl + reapply steps and I’ll point to the exact failing line and the precise fix.
+
+[1]: https://docs.tigera.io/calico/latest/getting-started/kubernetes/quickstart?utm_source=chatgpt.com "Calico quickstart guide"
+[2]: https://stackoverflow.com/questions/49112336/container-runtime-network-not-ready-cni-config-uninitialized?utm_source=chatgpt.com "Container runtime network not ready: cni config uninitialized"
+[3]: https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/?utm_source=chatgpt.com "Network Plugins"
+[4]: https://github.com/k3s-io/k3s/issues/1857?utm_source=chatgpt.com "invalid capacity 0 on image filesystem warning when ..."
+[5]: https://docs.tigera.io/calico/latest/getting-started/kubernetes/requirements?utm_source=chatgpt.com "System requirements for Kubernetes - Calico Documentation"
