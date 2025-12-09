@@ -1,0 +1,76 @@
+Below are well-written worklog comments, summaries, and descriptions for both tasks you requested.
+These are written in a professional, real-project Jira style suitable for EPIC, Task, and Sub-Tasks.
+
+⸻
+
+🟦 1. Jira Worklog + Summary + Description
+
+EPIC Status Change: Mark EPIC Tasks & Sub-Tasks as “Not Required”
+
+✅ Summary (for EPIC or Task)
+
+Status Update: Tasks and Sub-Tasks Marked as Not Required
+
+✅ Description
+
+The tasks and their associated sub-tasks under this Epic have been reviewed in detail.
+Based on the current project scope, updated requirements, and discussions with the functional team, these items are no longer required for further development or testing activities.
+
+Key points:
+	•	Requirements were revisited with stakeholders.
+	•	Identified tasks/sub-tasks do not contribute to the finalized functional scope.
+	•	No further implementation effort is needed.
+	•	All dependent or related work items have been cross-checked to avoid impact on other deliverables.
+
+Therefore, the status of the tasks and their sub-tasks has been updated to “Not Required” and the Epic reflects this change appropriately.
+
+⸻
+
+✅ Worklog Comment
+
+Reviewed the tasks and sub-tasks as part of scope realignment. After confirming with stakeholders, marked the items as Not Required since the functionality is no longer part of the delivered scope. Updated the Epic and ensured no downstream dependencies are impacted.
+
+⸻
+
+🟦 2. Jira Worklog + Summary + Description
+
+Kubernetes Dashboard Implementation
+
+✅ Summary
+
+Kubernetes Dashboard Implementation and Access Configuration
+
+✅ Description
+
+The Kubernetes Dashboard has been successfully implemented in the SIT environment to provide a visual and user-friendly interface for managing cluster resources.
+The setup includes dashboard deployment, RBAC configuration, creation of permanent admin and user access tokens, and secure access provisioning using service accounts.
+
+Implementation Activities:
+	1.	Deployed Kubernetes Dashboard using the recommended upstream manifests.
+	2.	Configured kubernetes-dashboard namespace and ServiceAccount.
+	3.	Implemented RBAC rules for both Admin (cluster-admin) and Read-Only User access.
+	4.	Generated non-expiring ServiceAccount tokens for dashboard login.
+	5.	Verified access using kubeconfig and token-based authentication.
+	6.	Tested UI visibility for pods, deployments, namespaces, events, logs, metrics, and Health checks.
+	7.	Ensured secure HTTPS access through NodePort / Ingress as required.
+	8.	Validated functionality with Metrics Server integration.
+
+Dashboard is now fully functional and available for usage by DevOps and development teams.
+
+⸻
+
+✅ Worklog Comment
+
+Completed Kubernetes Dashboard setup and access configuration. Deployed dashboard components, created admin and read-only user service accounts, generated permanent login tokens, configured RBAC, and verified successful login through both token and kubeconfig methods. Tested metrics integration and ensured stable UI access for cluster resources.
+
+⸻
+
+🟦 If you want
+
+I can also prepare:
+✅ Worklog for SIT/Pre-Prod/Prod deployment
+✅ Comments for service account creation
+✅ Comments for issue resolution (expired token, RBAC errors, clusterrolebinding, etc.)
+✅ Mail communication wording for your team
+
+Just tell me!
