@@ -1,0 +1,181 @@
+Great — if everyone in your team needs access to the Kubernetes Dashboard, you should not give the entire cluster full unrestricted admin access.
+Instead, you should set up a secure RBAC access model that matches how you already run your banking microservices (multiple namespaces like springboot-bau, springboot-migration, etc.).
+
+Below is a safe and professional setup used in enterprise on-prem Kubernetes clusters.
+
+⸻
+
+✅ Goal
+
+All team members should be able to see:
+
+✔ Their namespaces
+✔ Pods, logs, events
+✔ Deployments, ReplicaSets
+✔ Services, ConfigMaps, Secrets (optional)
+✔ Nodes (read-only)
+✔ Dashboard graphs
+
+But team members should NOT be able to:
+
+✘ Modify cluster-wide configuration
+✘ Delete system pods
+✘ Modify kube-system
+✘ Touch other teams’ namespaces
+✘ Modify cluster networking, Calico, CNI, etc.
+
+⸻
+
+⭐ Recommended Setup: RBAC Role for Team-Wide Access
+
+We will configure:
+	1.	One shared ServiceAccount named team-dashboard-user
+	2.	One ClusterRole (read-only for cluster resources, full access for your namespaces)
+	3.	One RoleBinding per namespace
+	4.	A small ClusterRoleBinding that allows read-only views across cluster components
+
+This gives a perfect balance between visibility and safety.
+
+⸻
+
+📌 STEP 1 — Create the Service Account
+
+vi dashboard-team-sa.yaml
+
+Paste this:
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: team-dashboard-user
+  namespace: kubernetes-dashboard
+
+Apply it:
+
+kubectl apply -f dashboard-team-sa.yaml
+
+
+⸻
+
+📌 STEP 2 — Create Team Role (Full Access to Team Namespaces)
+
+Create:
+
+vi team-ns-role.yaml
+
+Paste:
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: namespace-admin
+rules:
+  - apiGroups: ["", "apps", "batch"]
+    resources: ["pods", "pods/log", "pods/exec", "deployments", "replicasets", "services", "configmaps", "secrets", "jobs"]
+    verbs: ["get", "watch", "list", "create", "update", "patch", "delete"]
+
+Apply:
+
+kubectl apply -f team-ns-role.yaml -n springboot-bau
+kubectl apply -f team-ns-role.yaml -n springboot-migration
+# (add all your namespaces here)
+
+
+⸻
+
+📌 STEP 3 — Bind Role to ServiceAccount
+
+For each namespace:
+
+kubectl create rolebinding ns-admin-binding \
+  --role=namespace-admin \
+  --serviceaccount=kubernetes-dashboard:team-dashboard-user \
+  -n springboot-bau
+
+Then:
+
+kubectl create rolebinding ns-admin-binding \
+  --role=namespace-admin \
+  --serviceaccount=kubernetes-dashboard:team-dashboard-user \
+  -n springboot-migration
+
+Repeat for all namespaces.
+
+⸻
+
+📌 STEP 4 — Read-Only Access to Cluster Info (nodes, storage, events)
+
+Create:
+
+vi dashboard-readonly-clusterrole.yaml
+
+Paste:
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: dashboard-readonly-cluster
+rules:
+  - apiGroups: [""]
+    resources: ["nodes", "namespaces"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["metrics.k8s.io"]
+    resources: ["pods", "nodes"]
+    verbs: ["get", "list", "watch"]
+
+Apply:
+
+kubectl apply -f dashboard-readonly-clusterrole.yaml
+
+Bind it:
+
+kubectl create clusterrolebinding dashboard-readonly-binding \
+  --clusterrole=dashboard-readonly-cluster \
+  --serviceaccount=kubernetes-dashboard:team-dashboard-user
+
+
+⸻
+
+📌 STEP 5 — Generate Token for Team Access
+
+kubectl -n kubernetes-dashboard create token team-dashboard-user
+
+Share this token with your team.
+
+Anyone can use this same token.
+
+⸻
+
+🎉 TEAM DASHBOARD IS READY
+
+Your team will now see:
+
+✔ All pods/logs in allowed namespaces
+
+✔ All deployments & services
+
+✔ Node status (read-only)
+
+✔ Events, metrics, graphs
+
+✔ CronJobs, Jobs, ReplicaSets
+
+But they cannot:
+
+✘ Modify kube-system
+✘ Edit Calico
+✘ Touch control-plane
+✘ Break networking
+✘ Delete system components
+
+This is exactly how enterprise banking workloads configure dashboard access.
+
+⸻
+
+If you want, I can also generate:
+
+📌 A full YAML bundle (single file)
+📌 A least-privilege version (view-only)
+📌 A version with separate tokens for each team
+
+Just tell me.
