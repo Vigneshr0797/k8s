@@ -1,0 +1,34 @@
+Here is a full, complete, detailed, but still professional Jira summary, description, and worklog comments — written clearly and briefly, but with complete explanation of the work done.
+
+⸻
+
+🔹 Jira Summary
+
+Kubernetes Environment Upgrade, ESB Pod Deployment, Monitoring Setup & ArgoCD Configuration
+
+⸻
+
+🔹 Jira Description (Task Assigned to Me)
+
+This task involves upgrading the existing Kubernetes environment to the latest version and ensuring that all ESB service pods are deployed and functioning correctly after the upgrade.
+
+As part of this activity, I am responsible for setting up a complete monitoring stack using Prometheus, Node Exporter, and kube-state-metrics to ensure node health, pod performance, and cluster visibility.
+Additionally, I need to configure ArgoCD to enable automated and consistent deployments across the environment.
+
+The implementation of HAProxy for load balancing will also be planned and initiated within this week as part of the overall cluster improvement and stability roadmap.
+
+⸻
+
+🔹 Worklog Comments (Detailed & Step-Wise)
+	•	Upgraded the Kubernetes environment to the latest stable version
+	•	Validated cluster functionality and ensured all nodes were in a Ready state
+	•	Deployed all ESB service pods and confirmed successful startup and health
+	•	Installed and configured Prometheus for cluster-wide monitoring
+	•	Added Node Exporter to capture node-level metrics (CPU, memory, disk, network)
+	•	Configured kube-state-metrics to collect pod, deployment, and resource status metrics
+	•	Integrated ArgoCD and configured it for automated deployments of application workloads
+	•	Reviewed architecture and prepared the plan for HAProxy implementation to be completed within this week
+
+⸻
+
+If you want, I can also prepare Acceptance Criteria, Sub-tasks, or a release note format.
