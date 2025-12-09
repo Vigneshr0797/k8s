@@ -1,0 +1,102 @@
+Your ArgoCD pods are crashing because the CRDs (Custom Resource Definitions) for ArgoCD are NOT installed.
+
+Your log clearly shows this:
+
+argocd-server
+
+the server could not find the requested resource (post appprojects.argoproj.io)
+
+argocd-applicationset-controller
+
+no matches for argoproj.io/v1alpha1, Resource=applicationsets
+
+👉 This means ArgoCD CRDs are missing:
+	•	Application
+	•	AppProject
+	•	ApplicationSet
+	•	Rollout (if using Argo Rollouts)
+
+⸻
+
+✅ Root Cause
+
+You applied only the ArgoCD deployment manifests (argocd-cm, serviceaccount, roles, service, deployments).
+BUT ArgoCD requires CRD definitions installed BEFORE deploying controllers.
+
+These CRDs are normally installed by applying:
+
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+But since you used custom on-prem registry images & custom YAML, your CRD section is missing.
+
+⸻
+
+✅ Fix — Install ArgoCD CRDs
+
+Step 1 — Download CRD manifest for v3.1.5
+
+(Your images show version: ArgoCD v3.1.5)
+
+Apply only the CRDs:
+
+curl -L -o argocd-crds.yaml https://raw.githubusercontent.com/argoproj/argo-cd/v3.1.5/manifests/crds/crds.yaml
+kubectl apply -f argocd-crds.yaml
+
+OR if outbound internet not available, I will give you a CRD-only YAML (tell me if you want it).
+
+⸻
+
+Step 2 — Verify CRDs Installed
+
+kubectl get crd | grep argoproj
+
+You MUST see these:
+	•	applications.argoproj.io
+	•	appprojects.argoproj.io
+	•	applicationsets.argoproj.io
+	•	analysisruns.argoproj.io (if using Rollouts)
+	•	rollouts.argoproj.io (if using Rollouts)
+
+⸻
+
+Step 3 — Recreate ArgoCD Namespace
+
+If pods continue CrashLoop after CRDs applied:
+
+kubectl delete po --all -n argocd
+
+Or, safer:
+
+kubectl rollout restart deployment -n argocd
+
+
+⸻
+
+✅ Why This Happened
+
+Your uploaded YAML file contains ONLY these components:
+
+✔ ServiceAccounts
+✔ Roles & RoleBindings
+✔ ConfigMaps
+✔ Secrets
+✔ Services
+✔ Deployments
+
+❌ NO CRDs present in the file (verified from your uploaded file)  ￼
+
+Hence controllers cannot start because the API resources do not exist.
+
+⸻
+
+⭐ Want me to generate a FULL WORKING ARGOCD v3.1.5 BUNDLE for you?
+
+I can generate:
+	•	CRDs YAML
+	•	ArgoCD minimal HA YAML
+	•	Or single-file full bundle with your custom image registry
+	•	Or convert install.yaml to use your Harbor images
+
+Just tell me:
+
+Do you want the full ArgoCD v3.1.5 CRDs YAML or the complete installation YAML with Harbor images?
