@@ -1,189 +1,23 @@
-[root@EQVLWSO2APSIT15 script-files]# kubectl port-forward -n kubernetes-dashboard svc/kubernetes-dashboard 8443:443
-Forwarding from 127.0.0.1:8443 -> 8443
-^C[root@EQVLWSO2APSIT15 script-files]# kubectget po -n kubernetes-dashboard
-NAME                                         READY   STATUS    RESTARTS   AGE
-dashboard-metrics-scraper-5ffb7d645f-f45wq   1/1     Running   0          8m50s
-kubernetes-dashboard-6c7b75ffc-4bchv         1/1     Running   0          8m50s
-[root@EQVLWSO2APSIT15 script-files]# kubectl logs -f dashboard-metrics-scraper-5ffb7d645f-f45wq -n kubernetes-dashboard
-W1207 06:49:01.035232       1 client_config.go:617] Neither --kubeconfig nor --master was specified.  Using the inClusterConfig.  This might not work.
-{"level":"info","msg":"Kubernetes host: https://10.96.0.1:443","time":"2025-12-07T06:49:01Z"}
-{"level":"info","msg":"Namespace(s): []","time":"2025-12-07T06:49:01Z"}
-10.57.16.0 - - [07/Dec/2025:06:49:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.16.0 - - [07/Dec/2025:06:49:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:49:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:49:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:49:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:50:01Z"}
-10.57.16.0 - - [07/Dec/2025:06:50:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:50:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:50:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:50:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.16.0 - - [07/Dec/2025:06:50:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:50:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:50:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:50:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:51:01Z"}
-10.57.16.0 - - [07/Dec/2025:06:51:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:51:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:51:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:51:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.16.0 - - [07/Dec/2025:06:51:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:51:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:51:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:51:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:52:01Z"}
-10.57.16.0 - - [07/Dec/2025:06:52:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:52:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:52:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:52:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.16.0 - - [07/Dec/2025:06:52:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:52:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:52:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:52:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:53:01Z"}
-10.57.16.0 - - [07/Dec/2025:06:53:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:53:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:53:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:53:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.16.0 - - [07/Dec/2025:06:53:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:53:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:53:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:53:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:54:01Z"}
-10.57.16.0 - - [07/Dec/2025:06:54:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:54:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:54:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:54:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.16.0 - - [07/Dec/2025:06:54:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:54:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:54:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:54:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:55:01Z"}
-10.57.16.0 - - [07/Dec/2025:06:55:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:55:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:55:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:55:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.16.0 - - [07/Dec/2025:06:55:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:55:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:55:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:55:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:56:01Z"}
-10.57.16.0 - - [07/Dec/2025:06:56:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:56:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:56:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:56:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.16.0 - - [07/Dec/2025:06:56:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:56:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:56:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:56:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:57:01Z"}
-10.57.16.0 - - [07/Dec/2025:06:57:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:57:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:57:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:57:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.16.0 - - [07/Dec/2025:06:57:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:57:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:57:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-^C[root@EQVLWSO2APSIT15 script-files]# kubectlogs -f dashboard-metrics-scraper-5ffb7d645f-f45wq -n kubernetes-dashboard
-W1207 06:49:01.035232       1 client_config.go:617] Neither --kubeconfig nor --master was specified.  Using the inClusterConfig.  This might not work.
-{"level":"info","msg":"Kubernetes host: https://10.96.0.1:443","time":"2025-12-07T06:49:01Z"}
-{"level":"info","msg":"Namespace(s): []","time":"2025-12-07T06:49:01Z"}
-10.57.16.0 - - [07/Dec/2025:06:49:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.16.0 - - [07/Dec/2025:06:49:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:49:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:49:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:49:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:50:01Z"}
-10.57.16.0 - - [07/Dec/2025:06:50:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:50:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:50:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:50:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.16.0 - - [07/Dec/2025:06:50:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:50:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:50:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:50:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:51:01Z"}
-10.57.16.0 - - [07/Dec/2025:06:51:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:51:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:51:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:51:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.16.0 - - [07/Dec/2025:06:51:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:51:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:51:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:51:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:52:01Z"}
-10.57.16.0 - - [07/Dec/2025:06:52:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:52:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:52:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:52:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.16.0 - - [07/Dec/2025:06:52:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:52:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:52:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:52:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:53:01Z"}
-10.57.16.0 - - [07/Dec/2025:06:53:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:53:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:53:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:53:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.16.0 - - [07/Dec/2025:06:53:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:53:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:53:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:53:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:54:01Z"}
-10.57.16.0 - - [07/Dec/2025:06:54:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:54:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:54:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:54:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.16.0 - - [07/Dec/2025:06:54:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:54:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:54:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:54:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:55:01Z"}
-10.57.16.0 - - [07/Dec/2025:06:55:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:55:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:55:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:55:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.16.0 - - [07/Dec/2025:06:55:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:55:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:55:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:55:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:56:01Z"}
-10.57.16.0 - - [07/Dec/2025:06:56:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:56:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:56:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:56:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.16.0 - - [07/Dec/2025:06:56:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:56:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:56:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:56:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:57:01Z"}
-10.57.16.0 - - [07/Dec/2025:06:57:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:57:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:57:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:57:24 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.16.0 - - [07/Dec/2025:06:57:34 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:57:34 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:57:44 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:57:54 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-{"level":"info","msg":"Database updated: 10 nodes, 301 pods","time":"2025-12-07T06:58:01Z"}
-10.57.16.0 - - [07/Dec/2025:06:58:04 +0000] "GET /healthz HTTP/1.1" 200 13 "" "dashboard/v2.7.0"
-10.57.12.111 - - [07/Dec/2025:06:58:04 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-10.57.12.111 - - [07/Dec/2025:06:58:14 +0000] "GET / HTTP/1.1" 200 6 "" "kube-probe/1.34"
-^C[root@EQVLWSO2APSIT15 script-files]# kubectlogs -f kubernetes-dashboard-6c7b75ffc-4bchv -n kubernetes-dashboard
-2025/12/07 06:49:04 Starting overwatch
-2025/12/07 06:49:04 Using namespace: kubernetes-dashboard
-2025/12/07 06:49:04 Using in-cluster config to connect to apiserver
-2025/12/07 06:49:04 Using secret token for csrf signing
-2025/12/07 06:49:04 Initializing csrf token from kubernetes-dashboard-csrf secret
-2025/12/07 06:49:04 Empty token. Generating and storing in a secret kubernetes-dashboard-csrf
-2025/12/07 06:49:04 Successful initial request to the apiserver, version: v1.34.2
-2025/12/07 06:49:04 Generating JWE encryption key
-2025/12/07 06:49:04 New synchronizer has been registered: kubernetes-dashboard-key-holder-kubernetes-dashboard. Starting
-2025/12/07 06:49:04 Starting secret synchronizer for kubernetes-dashboard-key-holder in namespace kubernetes-dashboard
-2025/12/07 06:49:04 Initializing JWE encryption key from synchronized object
-2025/12/07 06:49:04 Creating in-cluster Sidecar client
-2025/12/07 06:49:04 Auto-generating certificates
-2025/12/07 06:49:04 Successfully created certificates
-2025/12/07 06:49:04 Successful request to sidecar
-2025/12/07 06:49:04 Serving securely on HTTPS port: 8443
-^C[root@EQVLWSO2APSIT15 script-files]#
+[root@EQVLWSO2APSIT15 ~]# kubectl get po -n argocd
+NAME                                                READY   STATUS             RESTARTS        AGE
+argocd-application-controller-0                     0/1     Running            0               19m
+argocd-applicationset-controller-785d65c9b5-vm2ck   0/1     CrashLoopBackOff   8 (3m47s ago)   19m
+argocd-dex-server-6789964fcf-bsvth                  1/1     Running            0               19m
+argocd-notifications-controller-84d8c56664-dwm57    1/1     Running            0               19m
+argocd-redis-6dfdd9cf98-lrbtd                       1/1     Running            0               19m
+argocd-repo-server-665df4d678-2x4mv                 1/1     Running            0               19m
+argocd-server-765c654c65-78dxf                      0/1     CrashLoopBackOff   8 (4m5s ago)    19m
+[root@EQVLWSO2APSIT15 ~]# kubectl logs -f argocd-server-765c654c65-78dxf -n argocd
+time="2025-12-09T05:57:48Z" level=info msg="maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined"
+{"built":"2025-09-10T15:31:30Z","commit":"cfeed4910542c359f18537a6668d4671abd3813b","level":"info","msg":"ArgoCD API Server is starting","namespace":"argocd","port":8080,"time":"2025-12-09T05:57:48Z","version":"v3.1.5+cfeed49"}
+{"level":"info","msg":"Starting configmap/secret informers","time":"2025-12-09T05:57:48Z"}
+{"level":"info","msg":"Configmap/secret informer synced","time":"2025-12-09T05:57:48Z"}
+{"level":"fatal","msg":"the server could not find the requested resource (post appprojects.argoproj.io)","time":"2025-12-09T05:57:48Z"}
+[root@EQVLWSO2APSIT15 ~]# kubectl logs -f argocd-applicationset-controller-785d65c9b5-vm2ck -n argocd
+time="2025-12-09T05:58:06Z" level=info msg="maxprocs: Leaving GOMAXPROCS=4: CPU quota undefined"
+{"built":"2025-09-10T15:31:30Z","commit":"cfeed4910542c359f18537a6668d4671abd3813b","level":"info","msg":"ArgoCD ApplicationSet Controller is starting","namespace":"argocd","time":"2025-12-09T05:58:06Z","version":"v3.1.5+cfeed49"}
+{"level":"info","msg":"Starting configmap/secret informers","time":"2025-12-09T05:58:06Z"}
+{"level":"info","msg":"Configmap/secret informer synced","time":"2025-12-09T05:58:06Z"}
+{"level":"info","msg":"Starting webhook server :7000","time":"2025-12-09T05:58:06Z"}
+{"level":"error","msg":"error setting up with manager: failed to get restmapping: unable to retrieve the complete list of server APIs: argoproj.io/v1alpha1: no matches for argoproj.io/v1alpha1, Resource=unable to create controllercontrollerApplicationSet","time":"2025-12-09T05:58:06Z"}
+[root@EQVLWSO2APSIT15 ~]#
