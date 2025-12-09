@@ -1,0 +1,126 @@
+Perfect — I’ll give you a clean, production-ready Kubernetes Dashboard NodePort installation tailored for your Oracle Linux 9.6 + Kubernetes v1.34.2 cluster.
+
+This includes:
+
+✔ Dashboard installation
+✔ NodePort service (fixed port 32000)
+✔ Admin user + full-access token
+✔ Commands to get token
+✔ How to open the dashboard
+
+⸻
+
+✅ STEP 1 — Install Kubernetes Dashboard
+
+Run this exactly as-is:
+
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
+
+This deploys:
+	•	deployment
+	•	service (ClusterIP)
+	•	RBAC
+	•	secrets
+
+⸻
+
+✅ STEP 2 — Change Dashboard Service to NodePort
+
+Create this file:
+
+dashboard-nodeport.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubernetes-dashboard
+  namespace: kubernetes-dashboard
+spec:
+  type: NodePort
+  ports:
+    - port: 443
+      targetPort: 8443
+      nodePort: 32000
+  selector:
+    k8s-app: kubernetes-dashboard
+
+Apply it:
+
+kubectl apply -f dashboard-nodeport.yaml
+
+
+⸻
+
+✅ STEP 3 — Create Admin User
+
+Create this file:
+
+dashboard-admin.yaml
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: kubernetes-dashboard
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: admin-user
+    namespace: kubernetes-dashboard
+
+Apply:
+
+kubectl apply -f dashboard-admin.yaml
+
+
+⸻
+
+✅ STEP 4 — Get Login Token
+
+Run:
+
+kubectl -n kubernetes-dashboard create token admin-user
+
+This will output a long JWT token — copy it.
+
+(If your version doesn’t support create token, use describe secret — I’ll help.)
+
+⸻
+
+✅ STEP 5 — Access the Dashboard
+
+Open browser:
+
+https://<YOUR_NODE_IP>:32000/
+
+For your setup:
+
+https://10.57.12.120:32000/
+
+Ignore certificate warning → Continue → Paste token.
+
+⸻
+
+🎉 Dashboard is now fully working!
+
+If any pod says CrashLoopBackOff or Pending, tell me:
+
+kubectl get pods -n kubernetes-dashboard -o wide
+
+I’ll fix it immediately.
+
+⸻
+
+Do you want:
+
+✅ Enable metrics server (to show CPU/RAM graphs)?
+OR
+✅ Change NodePort to LoadBalancer (MetalLB) for HTTPS without warning?
